@@ -51,3 +51,5 @@ public/uploads/
 # Optional: Cache directories
 .cache/
 .npm/
+
+tests/user.jpg

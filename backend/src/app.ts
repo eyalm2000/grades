@@ -1,6 +1,5 @@
 import express from 'express';
 import session from 'express-session';
-import './types/express-session';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
@@ -13,11 +12,15 @@ const app = express();
 
 app.use(express.json());
 
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret) {
+  throw new Error('SESSION_SECRET is not set in environment variables');
+}
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-  }));
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+}));
 
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);

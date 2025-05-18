@@ -175,13 +175,13 @@ export async function moeLogin(username: string, password: string) {
     userData = apiLoginResponse.data.data;
 
     const imageReq = `${webtopServerDomain}/serverImages/api/stream/GetImage?id=${userData.userId}&instiCode=${userData.institutionCode}&token=${userData.userImageToken}`;
-        const imageresponse = {
-            headers: {
-                'Cookie': cookiesForServer,
-            },
-            responseType: 'stream'
-        }
-    );
+    const imageresponse = {
+        headers: {
+            'Cookie': cookiesForServer,
+        },
+        responseType: 'stream'
+    }
+
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
 

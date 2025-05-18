@@ -182,8 +182,25 @@ export async function moeLogin(username: string, password: string) {
         responseType: 'stream'
     }
 
+    cookiesForServer = await jar.getCookieString(webtopServerDomain);
+        const gradesdata = {
+            studentID: userData.userId,
+            classCode: userData.classCode,
+            moduleID: 6
+        };
+
+        const grades = await clientInsecure.post(
+            `${webtopServerDomain}/server/api/PupilCard/GetPupilGrades`,
+            JSON.stringify(gradesdata),
+            {
+                headers: {
+                    'Cookie': cookiesForServer,
+                    'Content-Type': 'application/json; charset=utf-8',
+                }
+            }
+        );
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
 
-    return { success: true, cookies: cookiesForServer, userData: userData, imageReq: imageReq};
+    return { success: true, cookies: cookiesForServer, userData: userData, imageReq: imageReq, grades: grades};
 }

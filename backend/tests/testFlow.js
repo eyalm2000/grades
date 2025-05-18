@@ -33,6 +33,11 @@ async function main() {
       writer.on('error', reject);
     });
     console.log('User image saved to', imagePath);
+
+    // 4. Get grades
+    console.log('Fetching grades...');
+    const gradesRes = await client.get('/grades');
+    console.log('Grades:', gradesRes.data);
   } catch (err) {
     if (err.response) {
       console.error('Error:', err.response.status, err.response.data);

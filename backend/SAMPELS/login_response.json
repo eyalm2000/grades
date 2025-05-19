@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "headers": {
+    "x-powered-by": "Express",
+    "content-type": "application/json; charset=utf-8",
+    "content-length": "16",
+    "etag": "W/\"10-oV4hJxRVSENxc/wX8+mA4/Pe4tA\"",
+    "set-cookie": "connect.sid=s%3ANs3-p4S_0OUOpUwz7cB0kJCi539OXJ1X.QrURm102bv5e2ZHcsnoQFHO6MD1BiavVAgG60xjAc8A; Path=/; Expires=Tue, 20 May 2025 13:26:48 GMT; HttpOnly",
+    "date": "Mon, 19 May 2025 13:26:48 GMT",
+    "connection": "keep-alive",
+    "keep-alive": "timeout=5"
+  },
+  "data": {
+    "success": true
+  }
+}

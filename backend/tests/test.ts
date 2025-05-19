@@ -8,6 +8,7 @@ env.config();
 const BASE_URL = 'http://localhost:3000';
 const USERNAME = process.env.TEST_USERNAME;
 const PASSWORD = process.env.TEST_PASSWORD;
+const SAVE_TEST_RESPONSE = process.env.SAVE_TEST_RESPONSE === 'true';
 
 if (!USERNAME || !PASSWORD) {
     console.error('ERROR: TEST_USERNAME and TEST_PASSWORD must be set in .env file');
@@ -54,6 +55,13 @@ client.interceptors.response.use(async response => {
     return response;
 });
 
+function saveResponseToFile(filename: string, data: any) {
+    if (!SAVE_TEST_RESPONSE) return;
+    const filePath = `./tests/${filename}`;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    console.log(`Saved response to ${filePath}`);
+}
+
 async function main() {
     try {
         // Test server connection
@@ -66,6 +74,11 @@ async function main() {
         const loginRes = await client.post('/auth/login', { username: USERNAME, password: PASSWORD });
         console.log('Login status:', loginRes.status);
         console.log('Login response:', loginRes.data);
+        saveResponseToFile('login_response.json', {
+            status: loginRes.status,
+            headers: loginRes.headers,
+            data: loginRes.data
+        });
 
         if (loginRes.status !== 200) {
             throw new Error(`Login failed with status ${loginRes.status}: ${JSON.stringify(loginRes.data)}`);
@@ -76,6 +89,11 @@ async function main() {
         const infoRes = await client.get('/user/info');
         console.log('User info status:', infoRes.status);
         console.log('User info:', infoRes.data);
+        saveResponseToFile('user_info_response.json', {
+            status: infoRes.status,
+            headers: infoRes.headers,
+            data: infoRes.data
+        });
 
         // 3. Get user image
         console.log('\n=== Step 3: User Image ===');
@@ -89,12 +107,22 @@ async function main() {
             writer.on('error', reject);
         });
         console.log('User image saved to', imagePath);
+        // Save image response meta (not the image itself)
+        saveResponseToFile('user_image_response.json', {
+            status: imageRes.status,
+            headers: imageRes.headers
+        });
 
         // 4. Get grades
         console.log('\n=== Step 4: Grades ===');
         const gradesRes = await client.get('/grades');
         console.log('Grades status:', gradesRes.status);
         console.log('Grades:', gradesRes.data);
+        saveResponseToFile('grades_response.json', {
+            status: gradesRes.status,
+            headers: gradesRes.headers,
+            data: gradesRes.data
+        });
 
     } catch (err) {
         console.error('\n=== ERROR DETAILS ===');

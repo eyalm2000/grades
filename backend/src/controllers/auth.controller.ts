@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { moeLogin } from '../services/moe.service';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const login = async (req: Request, res: Response) => {
   const { username, password } = req.body;
@@ -19,6 +22,16 @@ export const login = async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Invalid response from authentication service' });
     }
 
+    if (userData.isTeacher == 1) {
+      console.error('Teacher account detected');
+      return res.status(401).json({ error: 'Teacher account detected' });
+    }
+
+    if (userData.schoolName != "חטב ליאו בק") {
+      console.error('Unsupported school');
+      return res.status(401).json({ error: 'Unsupported school' });
+    }
+
     (req.session as any).moeCookies = cookies;
     (req.session as any).userData = userData;
     (req.session as any).imageReq = imageReq;
@@ -27,8 +40,16 @@ export const login = async (req: Request, res: Response) => {
     console.log(`Login successful for user: ${username}`);
     res.json({ success: true });
   } catch (err) {
-    console.error('Login error:', err);
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
-    res.status(401).json({ error: errorMessage });
+    if (err == 'Invalid username or password') {
+      res.status(401).json({ error: 'Invalid username or password' });
+    }
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      res.status(401).json({ error: errorMessage });
+    } else {
+      res.status(500).json('Internal server error');
+    }
+    
   }
 }; 

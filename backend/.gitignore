@@ -54,3 +54,8 @@ public/uploads/
 
 tests/user.jpg
 user.jpg
+
+tests/login_response.json
+tests/user_info_response.json
+tests/grades_response.json
+tests/image_response.json

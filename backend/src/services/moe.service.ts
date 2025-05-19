@@ -99,6 +99,9 @@ export async function moeLogin(username: string, password: string) {
     });
     if (!ajaxResponse.data || ajaxResponse.data.isError) {
         debugLog('AJAX login failed', ajaxResponse.data);
+        if (ajaxResponse.data.errorCode == 'WRONG_USERNAME_OR_PASSWORD') {
+            throw new Error('Invalid username or password');
+        }
         throw new Error(`MOE AJAX login failed. Response: ${JSON.stringify(ajaxResponse.data)}`);
     }
     debugLog('AJAX login successful');
@@ -232,5 +235,6 @@ export async function moeLogin(username: string, password: string) {
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
 
     debugLog('Login process completed successfully');
+
     return { success: true, cookies: cookiesForServer, userData: userData, imageReq: imageReq, grades: grades};
 }

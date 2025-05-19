@@ -33,10 +33,12 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
+app.set('trust proxy', 1);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/grades', gradesRoutes);

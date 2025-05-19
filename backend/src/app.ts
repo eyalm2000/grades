@@ -10,6 +10,17 @@ dotenv.config();
 
 const app = express();
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} ${res.statusCode} - ${duration}ms`);
+  });
+  next();
+});
+
 app.use(express.json());
 
 const sessionSecret = process.env.SESSION_SECRET;
@@ -20,11 +31,23 @@ app.use(session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/grades', gradesRoutes);
 app.use('/image', imageRoutes);
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+  });
+});
 
 export default app; 

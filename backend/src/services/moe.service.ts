@@ -1,7 +1,7 @@
 // webtop.js
 import axios from 'axios';
 import { CookieJar } from 'tough-cookie';
-import { wrapper } from 'axios-cookiejar-support';
+// import { wrapper } from 'axios-cookiejar-support'; // Commented out old import
 import * as cheerio from 'cheerio';
 import { URLSearchParams, URL } from 'url';
 import https from 'https';
@@ -30,6 +30,10 @@ function containsJsRedirect(html: string): boolean {
 export async function moeLogin(username: string, password: string) {
     debugLog('Starting MOE login process');
     const jar = new CookieJar();
+
+    // Dynamically import axios-cookiejar-support
+    const { wrapper } = await import('axios-cookiejar-support');
+
     const clientWithCookies: any = wrapper(axios.create({
         // @ts-ignore: 'jar' is required for axios-cookiejar-support
         jar,
@@ -213,7 +217,7 @@ export async function moeLogin(username: string, password: string) {
             moduleID: 6
         };
 
-        const grades = await clientInsecure.post(
+        const gradesResponse = await clientInsecure.post(
             `${webtopServerDomain}/server/api/PupilCard/GetPupilGrades`,
             JSON.stringify(gradesdata),
             {
@@ -223,6 +227,7 @@ export async function moeLogin(username: string, password: string) {
                 }
             }
         );
+        const grades = gradesResponse.data;
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
 

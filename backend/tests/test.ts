@@ -5,7 +5,7 @@ import * as env from 'dotenv';
 
 env.config();
 
-const BASE_URL = 'https://grades-dwhbgpedcxc5eacp.israelcentral-01.azurewebsites.net';
+const BASE_URL = 'http://localhost:3000';
 const USERNAME = process.env.TEST_USERNAME;
 const PASSWORD = process.env.TEST_PASSWORD;
 const SAVE_TEST_RESPONSE = process.env.SAVE_TEST_RESPONSE === 'true';
@@ -123,6 +123,25 @@ async function main() {
             headers: gradesRes.headers,
             data: gradesRes.data
         });
+
+        // 5. Logout
+        console.log('\n=== Step 5: Logout ===');
+        const logoutRes = await client.post('/auth/logout');
+        console.log('Logout status:', logoutRes.status);
+        console.log('Logout response:', logoutRes.data);
+        saveResponseToFile('logout_response.json', {
+            status: logoutRes.status,
+            headers: logoutRes.headers,
+            data: logoutRes.data
+        });
+
+        // 6. Verify logout
+        console.log('\n=== Step 6: Verify Logout ===');
+        const verifyLogoutRes = await client.get('/user/info');
+        console.log('Verify logout status:', verifyLogoutRes.status);
+        if (verifyLogoutRes.status === 401) {
+            console.log('Logout verified successfully');
+        }
 
     } catch (err) {
         console.error('\n=== ERROR DETAILS ===');

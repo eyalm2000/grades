@@ -8,7 +8,7 @@ import https from 'https';
 
 // --- Configuration ---
 const webtopServerDomain = 'https://webtopserver.smartschool.co.il';
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = true;
 
 const debugLog = (...args: any[]) => {
     if (isDev) {
@@ -29,6 +29,7 @@ function containsJsRedirect(html: string): boolean {
 
 export async function moeLogin(username: string, password: string) {
     debugLog('Starting MOE login process');
+    const t = Date.now();
     const jar = new CookieJar();
 
     // Dynamically import axios-cookiejar-support
@@ -56,22 +57,25 @@ export async function moeLogin(username: string, password: string) {
     let loginKey = '';
     let userData: any = null;
 
-    // --- Login Steps (1-8) ---
-    // 1. Access initial SmartSchool page
+    // --- Login Steps ---
     debugLog('Step 1: Accessing initial SmartSchool page');
+    let t0 = Date.now();
     const initialUrl = 'https://webtop.smartschool.co.il/';
     await clientWithCookies.get(initialUrl);
+    debugLog('Step 1 axios request took', Date.now() - t0, 'ms');
 
-    // 2. Trigger MOE login
     debugLog('Step 2: Triggering MOE login');
+    t0 = Date.now();
     const moeLoginTriggerUrl = 'https://www.webtop.co.il/applications/loginMOENew/default.aspx';
     const triggerResponse = await clientWithCookies.get(moeLoginTriggerUrl);
+    debugLog('Step 2 axios request took', Date.now() - t0, 'ms');
     const moeLoginUrl = triggerResponse.request.res.responseUrl;
     debugLog('MOE Login URL:', moeLoginUrl);
 
-    // 3. Get login page and auto-submit form
     debugLog('Step 3: Getting login page and processing auto-submit form');
+    t0 = Date.now();
     const loginPageResponse = await clientWithCookies.get(moeLoginUrl);
+    debugLog('Step 3 (get login page) axios request took', Date.now() - t0, 'ms');
     const $loginPage = cheerio.load(loginPageResponse.data);
     const initialFormAction = $loginPage('form').attr('action');
     const initialFormMethod = $loginPage('form').attr('method');
@@ -80,10 +84,11 @@ export async function moeLogin(username: string, password: string) {
         throw new Error('Could not find initial auto-submit form on MOE login page.');
     }
     const initialPostUrl = new URL(initialFormAction, moeLoginUrl).toString();
+    t0 = Date.now();
     const credentialPageResponse = await clientWithCookies.post(initialPostUrl, '');
+    debugLog('Step 3 (post auto-submit form) axios request took', Date.now() - t0, 'ms');
     const credentialPageUrl = credentialPageResponse.request.res.responseUrl;
 
-    // 4. Submit credentials via AJAX
     debugLog('Step 4: Submitting credentials via AJAX');
     const ajaxBaseUrl = new URL('/nidp/wsfed/ep', credentialPageUrl).toString();
     const ajaxLoginUrl = `${ajaxBaseUrl}?sid=0&sid=0`;
@@ -91,12 +96,14 @@ export async function moeLogin(username: string, password: string) {
         option: 'credential', isAjax: 'true', HIN_USERID: username,
         Ecom_Password: password, 'g-recaptcha-response': ''
     });
+    t0 = Date.now();
     const ajaxResponse = await clientWithCookies.post(ajaxLoginUrl, ajaxLoginPayload.toString(), {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
             'Origin': new URL(credentialPageUrl).origin, 'Referer': credentialPageUrl
         }
     });
+    debugLog('Step 4 axios request took', Date.now() - t0, 'ms');
     if (!ajaxResponse.data || ajaxResponse.data.isError) {
         debugLog('AJAX login failed', ajaxResponse.data);
         if (ajaxResponse.data.errorCode == 'WRONG_USERNAME_OR_PASSWORD') {
@@ -106,9 +113,10 @@ export async function moeLogin(username: string, password: string) {
     }
     debugLog('AJAX login successful');
 
-    // 5. Submit final login form
+    // 5. Submit final login form (required for assertion)
     const finalLoginPostUrl = credentialPageUrl;
     const finalLoginPayload = new URLSearchParams({ option: 'credential' });
+    t0 = Date.now();
     await clientWithCookies.post(finalLoginPostUrl, finalLoginPayload.toString(), {
         maxRedirects: 0, validateStatus: (status: any) => status < 400,
         headers: {
@@ -116,17 +124,23 @@ export async function moeLogin(username: string, password: string) {
             'Origin': new URL(credentialPageUrl).origin, 'Referer': credentialPageUrl
         }
     });
+    debugLog('Step 5 axios request took', Date.now() - t0, 'ms');
 
-    // 6. Follow intermediate redirect
+    // 6. Follow intermediate redirect (skip repeated GET if assertion form is present)
     debugLog('Step 6: Following intermediate redirect');
     const intermediateRedirectPath = 'ep?sid=0';
     const intermediateRedirectUrl = new URL(intermediateRedirectPath, finalLoginPostUrl).toString();
+    t0 = Date.now();
     let assertionPageResponse = await clientWithCookies.get(intermediateRedirectUrl);
+    debugLog('Step 6 (get assertion page) axios request took', Date.now() - t0, 'ms');
     let assertionPageUrl = assertionPageResponse.request.res.responseUrl;
 
+    // Only follow JS redirect if assertion form is not present
     if (!containsAssertionForm(assertionPageResponse.data) && containsJsRedirect(assertionPageResponse.data)) {
         debugLog('JS redirect detected, following redirect');
+        t0 = Date.now();
         assertionPageResponse = await clientWithCookies.get(intermediateRedirectUrl);
+        debugLog('Step 6 (js redirect) axios request took', Date.now() - t0, 'ms');
         assertionPageUrl = assertionPageResponse.request.res.responseUrl;
     }
 
@@ -147,6 +161,7 @@ export async function moeLogin(username: string, password: string) {
     }
 
     const assertionPostPayload = new URLSearchParams({ wa: String(wa), wresult: String(wresult), wctx: String(wctx) });
+    t0 = Date.now();
     const webtopAssertionResponse = await clientWithCookies.post(assertionFormAction, assertionPostPayload.toString(), {
         maxRedirects: 0, validateStatus: (status: any) => status === 302,
         headers: {
@@ -154,13 +169,16 @@ export async function moeLogin(username: string, password: string) {
             'Origin': new URL(assertionPageUrl).origin, 'Referer': assertionPageUrl
         }
     });
+    debugLog('Step 6 (assertion post) axios request took', Date.now() - t0, 'ms');
 
     const intermediateRedirectLocation = webtopAssertionResponse.headers.location;
     if (!intermediateRedirectLocation) {
         throw new Error(`Assertion POST did not return a valid Location header.`);
     }
     const intermediateGetUrl = new URL(intermediateRedirectLocation, assertionFormAction).toString();
+    t0 = Date.now();
     const finalRedirectResponse = await clientWithCookies.get(intermediateGetUrl, { maxRedirects: 5 });
+    debugLog('Step 6 (final redirect) axios request took', Date.now() - t0, 'ms');
 
     const smartschoolRedirectUrl = finalRedirectResponse.request.res.responseUrl;
     if (!smartschoolRedirectUrl || !smartschoolRedirectUrl.includes('/account/loginMoe?key=')) {
@@ -184,6 +202,7 @@ export async function moeLogin(username: string, password: string) {
         browserMajorVersion: 108, cookies: true, userAgent: clientWithCookies.defaults.headers['User-Agent']
     });
     const apiLoginPayload = { rememberMe: "", key: loginKey, deviceDataJson: deviceDataJson };
+    t0 = Date.now();
     const apiLoginResponse = await clientInsecure.post(apiLoginUrl, apiLoginPayload, {
         headers: {
             'Content-Type': 'application/json', 'Origin': 'https://webtop.smartschool.co.il',
@@ -191,6 +210,7 @@ export async function moeLogin(username: string, password: string) {
             'Cookie': cookiesForServer
         }
     });
+    debugLog('API login axios request took', Date.now() - t0, 'ms');
 
     if (apiLoginResponse.headers['set-cookie']) {
         await Promise.all(
@@ -214,27 +234,29 @@ export async function moeLogin(username: string, password: string) {
     }
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
-        const gradesdata = {
-            studentID: userData.userId,
-            classCode: userData.classCode,
-            moduleID: 6
-        };
-
-        const gradesResponse = await clientInsecure.post(
-            `${webtopServerDomain}/server/api/PupilCard/GetPupilGrades`,
-            JSON.stringify(gradesdata),
-            {
-                headers: {
-                    'Cookie': cookiesForServer,
-                    'Content-Type': 'application/json; charset=utf-8',
-                }
+    const gradesdata = {
+        studentID: userData.userId,
+        classCode: userData.classCode,
+        moduleID: 6
+    };
+    t0 = Date.now();
+    const gradesResponse = await clientInsecure.post(
+        `${webtopServerDomain}/server/api/PupilCard/GetPupilGrades`,
+        JSON.stringify(gradesdata),
+        {
+            headers: {
+                'Cookie': cookiesForServer,
+                'Content-Type': 'application/json; charset=utf-8',
             }
-        );
-        const grades = gradesResponse.data;
+        }
+    );
+    debugLog('Grades API axios request took', Date.now() - t0, 'ms');
+    const grades = gradesResponse.data;
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
 
     debugLog('Login process completed successfully');
+    debugLog('Total time taken:', Date.now() - t, 'ms');
 
     return { success: true, cookies: cookiesForServer, userData: userData, imageReq: imageReq, grades: grades};
 }

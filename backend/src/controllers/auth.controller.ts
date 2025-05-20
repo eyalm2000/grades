@@ -53,3 +53,20 @@ export const login = async (req: Request, res: Response) => {
     
   }
 }; 
+
+export const logout = (req: Request, res: Response) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ error: 'Failed to log out' });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ success: true });
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ error: 'Failed to log out' });
+  }
+};
+

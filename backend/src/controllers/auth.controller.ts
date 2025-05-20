@@ -40,17 +40,16 @@ export const login = async (req: Request, res: Response) => {
     console.log(`Login successful for user: ${username}`);
     res.json({ success: true });
   } catch (err) {
-    if (err == 'Invalid username or password') {
-      res.status(401).json({ error: 'Invalid username or password' });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    if (errorMessage === 'Invalid username or password') {
+      return res.status(401).json({ error: 'Invalid username or password' });
     }
     if (process.env.NODE_ENV === 'development') {
       console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
       res.status(401).json({ error: errorMessage });
     } else {
       res.status(500).json('Internal server error');
     }
-    
   }
 }; 
 

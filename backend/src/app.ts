@@ -23,7 +23,22 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: '*',
+  origin: function(origin, callback) {
+    if(!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'https://kzmh4amtyumexoymkvaw.lite.vusercontent.net',
+      'http://localhost:3000', 
+      'http://localhost:5173'
+    ];
+    
+    if(allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked request from origin:', origin);
+      callback(null, false);
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

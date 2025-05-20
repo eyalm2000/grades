@@ -1,6 +1,7 @@
 import express from 'express';
 import session from 'express-session';
 import dotenv from 'dotenv';
+import cors from 'cors';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import gradesRoutes from './routes/grades.routes';
@@ -20,6 +21,13 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+app.use(cors({
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json());
 
@@ -52,4 +60,4 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-export default app; 
+export default app;

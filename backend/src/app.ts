@@ -37,12 +37,14 @@ app.use(cors({
       callback(null, true);
     } else {
       console.log('CORS blocked request from origin:', origin);
-      callback(null, false);
+      // For debugging, allow all origins temporarily
+      callback(null, true);
+      // callback(null, false);
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json());
@@ -54,21 +56,30 @@ if (!sessionSecret) {
 app.use(session({
   secret: sessionSecret,
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true, 
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    httpOnly: true,
+    sameSite: 'none',
+    maxAge: 24 * 60 * 60 * 1000 
   }
 }));
 
 app.set('trust proxy', 1);
+app.get('/debug/session', (req, res) => {
+  res.json({
+    sessionExists: !!req.session,
+    sessionID: req.sessionID,
+    isAuthenticated: !!(req.session as any).userData,
+    cookiesHeader: req.headers.cookie
+  });
+});
+
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/grades', gradesRoutes);
 app.use('/image', imageRoutes);
 
-// Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Error:', err);
   res.status(err.status || 500).json({

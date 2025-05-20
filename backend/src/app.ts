@@ -28,6 +28,7 @@ app.use(cors({
     
     const allowedOrigins = [
       'https://kzmh4amtyumexoymkvaw.lite.vusercontent.net',
+      'https://kzmo3u9fbndryo6wvjn4.lite.vusercontent.net',
       'http://localhost:3000', 
       'http://localhost:5173'
     ];

@@ -5,7 +5,7 @@ import * as env from 'dotenv';
 
 env.config();
 
-const BASE_URL = 'https://grades-dwhbgpedcxc5eacp.israelcentral-01.azurewebsites.net';
+const BASE_URL = 'http://localhost:3000';
 const USERNAME = process.env.TEST_USERNAME;
 const PASSWORD = process.env.TEST_PASSWORD;
 const SAVE_TEST_RESPONSE = process.env.SAVE_TEST_RESPONSE === 'true';

@@ -69,6 +69,10 @@ async function main() {
         const healthCheck = await client.get('/');
         console.log('Server connection status:', healthCheck.status);
 
+        // 0 refresh CORS
+        console.log('Refreshing CORS origins...');
+        const corsRes = await client.get('/internal/refresh-cors');
+
         // 1. Login
         console.log('\n=== Step 1: Login ===');
         const loginRes = await client.post('/auth/login', { username: USERNAME, password: PASSWORD });

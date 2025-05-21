@@ -1,13 +1,13 @@
 import axios from 'axios';
- 
+
 export async function corsService() {
     try {
         const response = await axios.get('https://raw.githubusercontent.com/eyalm2000/grades/refs/heads/main/backend/cors.txt');
-        const text = await response.data;
+        const text: string = response.data;
         const allowedOrigins = text
             .split('\n')
             .map((origin: string) => origin.trim())
-            .filter((origin: string) => origin !== '');
+            .filter((origin: string) => origin !== '' && !origin.startsWith('//'));
         console.log('Allowed origins:', allowedOrigins);
         return allowedOrigins;
     } catch (error) {

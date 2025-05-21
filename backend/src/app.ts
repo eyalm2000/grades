@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 });
 
 let allowedOrigins: string[] = [];
-async function loadOrigins() {
+export async function loadOrigins() {
   try {
     allowedOrigins = await corsService();
     console.log('CORS origins loaded:', allowedOrigins);

@@ -1,6 +1,1 @@
-example.com
-github.com
-cors-test.codehappy.dev
-preview--grade-vista-hebrew.lovable.app
-id-preview--41538b01-bd73-494e-9e5d-b5db3fa7893f.lovable.app
-41538b01-bd73-494e-9e5d-b5db3fa7893f.lovableproject.com
+grades.eyalm.tech

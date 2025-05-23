@@ -1,3 +1,4 @@
 example.com
 github.com
 cors-test.codehappy.dev
+preview--grade-vista-hebrew.lovable.app

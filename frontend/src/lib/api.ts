@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://super-duper-carnival-5gq464q5gwx925vg-3000.app.github.dev';
+const API_BASE_URL = 'https://gradesapi.eyalm.tech';
 
 export interface LoginCredentials {
   username: string;

@@ -5,6 +5,7 @@ declare module 'express-session' {
     moeCookies?: string;
     userData?: any;
     imageReq?: string;
-    grades?: any;
+    gradesPeriod1?: any;
+    gradesPeriod2?: any;
   }
 } 

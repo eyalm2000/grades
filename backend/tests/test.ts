@@ -117,15 +117,26 @@ async function main() {
             headers: imageRes.headers
         });
 
-        // 4. Get grades
-        console.log('\n=== Step 4: Grades ===');
-        const gradesRes = await client.get('/grades');
-        console.log('Grades status:', gradesRes.status);
-        console.log('Grades:', gradesRes.data);
+        // 4. Get grades for period 1
+        console.log('\n=== Step 4: Grades for period 1 ===');
+        const gradesRes1 = await client.get('grades/period1');
+        console.log('Grades status:', gradesRes1.status);
+        console.log('Grades:', gradesRes1.data);
         saveResponseToFile('grades_response.json', {
-            status: gradesRes.status,
-            headers: gradesRes.headers,
-            data: gradesRes.data
+            status: gradesRes1.status,
+            headers: gradesRes1.headers,
+            data: gradesRes1.data
+        });
+
+        // 4.1 Get grades for period 2
+        console.log('\n=== Step 4.1: Grades for period 2 ===');
+        const gradesRes2 = await client.get('grades/period2');
+        console.log('Grades status:', gradesRes2.status);
+        console.log('Grades:', gradesRes2.data);
+        saveResponseToFile('grades_response_2.json', {
+            status: gradesRes2.status,
+            headers: gradesRes2.headers,
+            data: gradesRes2.data
         });
 
         // 5. Logout

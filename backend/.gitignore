@@ -59,3 +59,6 @@ tests/login_response.json
 tests/user_info_response.json
 tests/grades_response.json
 tests/image_response.json
+tests/grades_response_2.json
+tests/user_image_response.json
+tests/logout_response.json

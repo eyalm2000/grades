@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function corsService() {
+export async function corsService(): Promise<string[]> {
     try {
         const response = await axios.get('https://raw.githubusercontent.com/eyalm2000/grades/refs/heads/main/backend/cors.txt');
         const text: string = response.data;

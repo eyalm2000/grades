@@ -226,23 +226,19 @@ export async function moeLogin(username: string, password: string) {
     userData = apiLoginResponse.data.data;
 
     const imageReq = `${webtopServerDomain}/serverImages/api/stream/GetImage?id=${userData.userId}&instiCode=${userData.institutionCode}&token=${userData.userImageToken}`;
-    const imageresponse = {
-        headers: {
-            'Cookie': cookiesForServer,
-        },
-        responseType: 'stream'
-    }
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
-    const gradesdata = {
+    const gradesPeriod1data = {
         studentID: userData.userId,
         classCode: userData.classCode,
-        moduleID: 6
+        moduleID: 6,
+        periodID: 1538,
+        periodName: "מחצית א`"
     };
     t0 = Date.now();
-    const gradesResponse = await clientInsecure.post(
+    const gradesPeriod1Response = await clientInsecure.post(
         `${webtopServerDomain}/server/api/PupilCard/GetPupilGrades`,
-        JSON.stringify(gradesdata),
+        JSON.stringify(gradesPeriod1data),
         {
             headers: {
                 'Cookie': cookiesForServer,
@@ -250,13 +246,34 @@ export async function moeLogin(username: string, password: string) {
             }
         }
     );
+
+    const gradesPeriod2data = {
+        studentID: userData.userId,
+        classCode: userData.classCode,
+        moduleID: 6,
+        periodID: 1539,
+        periodName: "מחצית ב`"
+    };
+
+    const gradesPeriod2Response = await clientInsecure.post(
+        `${webtopServerDomain}/server/api/PupilCard/GetPupilGrades`,
+        JSON.stringify(gradesPeriod2data),
+        {
+            headers: {
+                'Cookie': cookiesForServer,
+                'Content-Type': 'application/json; charset=utf-8',
+            }
+        }
+    );
+
     debugLog('Grades API axios request took', Date.now() - t0, 'ms');
-    const grades = gradesResponse.data;
+    const gradesPeriod1 = gradesPeriod1Response.data;
+    const gradesPeriod2 = gradesPeriod2Response.data;
 
     cookiesForServer = await jar.getCookieString(webtopServerDomain);
 
     debugLog('Login process completed successfully');
     debugLog('Total time taken:', Date.now() - t, 'ms');
 
-    return { success: true, cookies: cookiesForServer, userData: userData, imageReq: imageReq, grades: grades};
+    return { success: true, cookies: cookiesForServer, userData: userData, imageReq: imageReq, gradesPeriod1: gradesPeriod1, gradesPeriod2: gradesPeriod2 };
 }

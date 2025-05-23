@@ -15,7 +15,7 @@ export const login = async (req: Request, res: Response) => {
   console.log(`Login attempt for user: ${username}`);
   
   try {
-    const { cookies, userData, imageReq, grades } = await moeLogin(username, password);
+    const { cookies, userData, imageReq, gradesPeriod1, gradesPeriod2 } = await moeLogin(username, password);
     
     if (!cookies || !userData) {
       console.error('Login failed: Invalid response from MOE service');
@@ -35,8 +35,9 @@ export const login = async (req: Request, res: Response) => {
     (req.session as any).moeCookies = cookies;
     (req.session as any).userData = userData;
     (req.session as any).imageReq = imageReq;
-    (req.session as any).grades = grades;
-    
+    (req.session as any).gradesPeriod1 = gradesPeriod1;
+    (req.session as any).gradesPeriod2 = gradesPeriod2;
+
     console.log(`Login successful for user: ${username}`);
     res.json({ success: true });
   } catch (err) {

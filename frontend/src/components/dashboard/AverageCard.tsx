@@ -19,14 +19,14 @@ export function AverageCard({ title, average, subtitle, delay = 0 }: AverageCard
 
   return (
     <motion.div whileHover="hover" variants={cardHoverVariants}>
-      <Card className="border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm min-h-[200px] max-h-[200px]">
-        <CardHeader className="pb-2">
+      <Card className="border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm">
+        <CardHeader className="pb-2 px-4 pt-4 sm:px-6 sm:pt-6">
           <CardTitle>{title}</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center text-center p-4">
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="flex flex-col items-center justify-center text-center">
             <motion.div 
-              className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text mb-2"
+              className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text mb-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ 

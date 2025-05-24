@@ -1,4 +1,3 @@
-
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 
@@ -20,12 +19,12 @@ export function AverageCard({ title, average, subtitle, delay = 0 }: AverageCard
 
   return (
     <motion.div whileHover="hover" variants={cardHoverVariants}>
-      <Card className="border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm">
+      <Card className="border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm min-h-[200px] max-h-[200px]">
         <CardHeader className="pb-2">
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center">
+          <div className="flex flex-col items-center justify-center text-center p-4">
             <motion.div 
               className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text mb-2"
               initial={{ opacity: 0 }}

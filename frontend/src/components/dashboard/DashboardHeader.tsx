@@ -25,7 +25,7 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            גרייד ויזטה
+            GradeWiz
           </motion.h1>
           <Button
             variant="ghost"

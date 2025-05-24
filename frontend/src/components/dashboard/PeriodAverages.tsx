@@ -18,12 +18,12 @@ export function PeriodAverages({ p1Average, p2Average }: PeriodAveragesProps) {
 
   return (
     <motion.div whileHover="hover" variants={cardHoverVariants}>
-      <Card className="border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm">
-        <CardHeader className="pb-2">
+      <Card className="border-0 shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm min-h-[200px] max-h-[200px]">
+        <CardHeader className="pb-2 gap-4">
           <CardTitle>ממוצעים לפי מחצית</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 mt-4">
             <motion.div 
               className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100 shadow-sm"
               whileHover={{ y: -3 }}

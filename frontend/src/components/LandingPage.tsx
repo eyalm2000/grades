@@ -135,7 +135,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           <div className="text-center text-white">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 drop-shadow-lg">
               <span className="bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                גרייד ויזטה
+                GradeWiz
               </span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto leading-relaxed">
@@ -158,7 +158,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="text-center mb-16">
           <Badge className="mb-2 px-4 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 border-0">יתרונות</Badge>
           <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-4">
-            למה לבחור בגרייד ויזטה?
+            למה לבחור בGradeWiz?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             אנחנו מביאים לך את הכלים המתקדמים ביותר לניהול ציונים, עם ממשק חכם ואינטואיטיבי
@@ -237,7 +237,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             מוכן להתחיל את המסע שלך?
           </h2>
           <p className="text-xl text-indigo-200 mb-8">
-            הצטרף עכשיו לאלפי תלמידים שכבר משתמשים בגרייד ויזטה
+            הצטרף עכשיו לאלפי תלמידים שכבר משתמשים בGradeWiz
           </p>
           <Button 
             onClick={onGetStarted}

@@ -33,7 +33,7 @@ export function OnboardingWelcome({ userImage, firstName, onNext }: OnboardingWe
       </h1>
       
       <p className="text-lg text-gray-600 max-w-md mx-auto leading-relaxed">
-        ברוך הבא לגרייד ויזטה! אנחנו כאן כדי לעזור לך לנהל את הציונים שלך בצורה החכמה והקלה ביותר.
+        ברוך הבא לGradeWiz! אנחנו כאן כדי לעזור לך לנהל את הציונים שלך בצורה החכמה והקלה ביותר.
         בואו נתחיל בהכנת המערכת במיוחד עבורך.
       </p>
       

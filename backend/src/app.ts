@@ -40,8 +40,8 @@ app.use(cors({
       return callback(null, true);
     }
     try {
-      const { hostname } = new URL(origin);
-      if (allowedOrigins.includes(hostname)) {
+      const { hostname, port } = new URL(origin);
+      if (allowedOrigins.includes(hostname) || (hostname === 'localhost' && port === '8080')) {
         return callback(null, true);
       }
     } catch (e) {
@@ -59,13 +59,14 @@ if (!sessionSecret) {
   throw new Error('SESSION_SECRET is not set in environment variables');
 }
 app.use(session({
+
   secret: sessionSecret,
   resave: false,
   saveUninitialized: true, 
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: 'none',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 
   }
 }));

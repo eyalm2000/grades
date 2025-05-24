@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,11 +28,30 @@ type AppState =
   | 'profile';
 
 function AppContent() {
-  const { user, isAuthenticated, isLoading, login, logout, userImage } = useAuth();
+  const auth = useAuth();
   const [appState, setAppState] = useState<AppState>('landing');
+  const [initialAuthCheckComplete, setInitialAuthCheckComplete] = useState(false);
 
-  // Handle authentication state changes
-  if (isLoading) {
+  const { user, userImage } = auth;
+
+  useEffect(() => {
+    if (!auth.isLoading && !initialAuthCheckComplete) {
+      setInitialAuthCheckComplete(true);
+      if (auth.isAuthenticated && appState === 'landing') {
+        setAppState('dashboard');
+      } else if (!auth.isAuthenticated && !['landing', 'login'].includes(appState)) {
+        setAppState('landing');
+      }
+    }
+  }, [auth.isLoading, auth.isAuthenticated, appState, initialAuthCheckComplete]);
+
+   useEffect(() => {
+    if (initialAuthCheckComplete && !auth.isAuthenticated && !['landing', 'login'].includes(appState)) {
+        setAppState('landing');
+    }
+  }, [auth.isAuthenticated, appState, initialAuthCheckComplete]);
+
+  if (!initialAuthCheckComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -44,16 +62,12 @@ function AppContent() {
     );
   }
 
-  if (isAuthenticated && appState === 'landing') {
-    setAppState('dashboard');
-  }
-
-  if (!isAuthenticated && !['landing', 'login'].includes(appState)) {
-    setAppState('landing');
+   if (auth.isAuthenticated && appState === 'landing') {
+     setAppState('dashboard');
   }
 
   const handleLogin = async (username: string, password: string): Promise<boolean> => {
-    const success = await login(username, password);
+     const success = await auth.login(username, password);
     if (success) {
       setAppState('onboarding-welcome');
     }
@@ -61,12 +75,20 @@ function AppContent() {
   };
 
   const handleLogout = async () => {
-    await logout();
+    await auth.logout();
     setAppState('landing');
   };
 
   switch (appState) {
     case 'landing':
+      if (auth.isAuthenticated) {
+        setTimeout(() => { setAppState('dashboard'); }, 0);
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        );
+      }
       return (
         <LandingPage
           onGetStarted={() => setAppState('login')}
@@ -74,6 +96,14 @@ function AppContent() {
       );
 
     case 'login':
+      if (auth.isAuthenticated) {
+        setTimeout(() => setAppState('dashboard'), 0);
+        return (
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        );
+      }
       return (
         <LoginPage
           onLogin={handleLogin}

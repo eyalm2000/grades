@@ -44,7 +44,9 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
         setError('שם משתמש או סיסמה שגויים');
       }
     } catch (err: any) {
-      if (err.message.includes('Teacher account detected')) {
+      if (err.message.includes('Invalid username or password')) {
+        setError('שם משתמש או סיסמה שגויים');
+      } else if (err.message.includes('Teacher account detected')) {
         setError('זוהה חשבון מורה - המערכת מיועדת לתלמידים בלבד');
       } else if (err.message.includes('Unsupported school')) {
         setError('בית הספר לא נתמך במערכת');
@@ -186,31 +188,6 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
                           className="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-linear"
                           style={{ width: `${progress}%` }}
                         ></div>
-                      </div>
-                      <div className="flex justify-center">
-                        <svg className="w-16 h-16" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="40"
-                            stroke="#e5e7eb"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="40"
-                            stroke="#3b82f6"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeDasharray="251.2"
-                            strokeDashoffset={251.2 - (251.2 * progress) / 100}
-                            className="transition-all duration-1000 ease-linear"
-                            style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}
-                          />
-                        </svg>
                       </div>
                     </div>
                   )}

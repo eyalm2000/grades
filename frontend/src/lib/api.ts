@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://gradesapi.eyalm.tech';
+const API_BASE_URL = 'http://localhost:3000';
 
 export interface LoginCredentials {
   username: string;

@@ -7,8 +7,8 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - 'backend/cors.txt'
+    paths:
+      - 'backend/**'
   workflow_dispatch:
 
 jobs:
@@ -74,4 +74,3 @@ jobs:
           app-name: 'grades'
           slot-name: 'Production'
           package: .
-          

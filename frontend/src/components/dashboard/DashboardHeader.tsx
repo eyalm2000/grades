@@ -18,10 +18,10 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
       transition={{ duration: 0.5 }}
       className="bg-white/80 backdrop-blur-md shadow-sm border-b sticky top-0 z-10"
     >
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
+      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
           <motion.h1 
-            className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text"
+            className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
@@ -32,7 +32,7 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
             <Button
               variant="ghost"
               onClick={onProfile}
-              className="flex items-center space-x-3 space-x-reverse group bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200 hover:border-purple-300 rounded-xl px-4 py-2 h-auto transition-all duration-200"
+              className="flex items-center space-x-2 sm:space-x-3 space-x-reverse group bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200 hover:border-purple-300 rounded-xl px-2 sm:px-4 py-2 h-auto transition-all duration-200 self-end sm:self-center"
             >
               <Avatar className="w-10 h-10 ring-2 ring-purple-200 group-hover:ring-purple-400 transition-all duration-200">
                 <AvatarImage 

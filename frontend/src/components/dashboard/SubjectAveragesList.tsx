@@ -76,9 +76,9 @@ export function SubjectAveragesList({
   return (
     <motion.div variants={itemVariants}>
       <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>ממוצעים לפי מקצוע</CardTitle>
+        <CardHeader className="px-4 pt-4 sm:px-6 sm:pt-6">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="text-lg sm:text-xl">ממוצעים לפי מקצוע</CardTitle>
             {sortedSubjects.some(s => s.overall.hasMissingData || s.period1.hasMissingData || s.period2.hasMissingData) && (
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Button 
@@ -112,11 +112,13 @@ export function SubjectAveragesList({
                   isOnlyPeriod2(subject) ? 'bg-gradient-to-r from-green-50 to-green-100 border-green-200' :
                   'bg-gradient-to-r from-gray-50 to-blue-50 border-blue-50'
                 }`}>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3 space-x-reverse">
-                      <h3 className="font-medium text-gray-900">{subject.subject}</h3>
+                  <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
+                    <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:space-x-3 sm:space-x-reverse">
+                      <h3 className="font-medium text-gray-900 text-base sm:text-lg">{subject.subject}</h3>
                       
-                      {/* סימון מקצועות שנלמדו רק במחצית אחת */}
+                      {/* Container for badges to allow wrapping and spacing */}
+                      <div className="flex flex-wrap gap-1">
+                        {/* סימון מקצועות שנלמדו רק במחצית אחת */}
                       {isOnlyPeriod1(subject) && (
                         <Badge 
                           variant="outline" 
@@ -150,12 +152,13 @@ export function SubjectAveragesList({
                           מידע חסר
                         </Badge>
                       )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-6 space-x-reverse">
+                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
                       {/* Period 1 */}
-                      <div className="text-center">
+                      <div className="text-start sm:text-center">
                         <div className="text-sm text-gray-500 mb-1">מחצית א׳</div>
-                        <div className={`text-lg font-bold ${getAverageColor(subject.period1.average, subject.period1.isUncalculateable)}`}>
+                        <div className={`text-base sm:text-lg font-bold ${getAverageColor(subject.period1.average, subject.period1.isUncalculateable)}`}>
                           {hasNoGradesInPeriod1(subject) ? "—" : 
                            subject.period1.isUncalculateable ? "—" : 
                            subject.period1.average.toFixed(1)}
@@ -174,9 +177,9 @@ export function SubjectAveragesList({
                       </div>
                       
                       {/* Period 2 */}
-                      <div className="text-center">
+                      <div className="text-start sm:text-center">
                         <div className="text-sm text-gray-500 mb-1">מחצית ב׳</div>
-                        <div className={`text-lg font-bold ${getAverageColor(subject.period2.average, subject.period2.isUncalculateable)}`}>
+                        <div className={`text-base sm:text-lg font-bold ${getAverageColor(subject.period2.average, subject.period2.isUncalculateable)}`}>
                           {hasNoGradesInPeriod2(subject) ? "—" : 
                            subject.period2.isUncalculateable ? "—" : 
                            subject.period2.average.toFixed(1)}
@@ -195,12 +198,12 @@ export function SubjectAveragesList({
                       </div>
                       
                       {/* Overall Average */}
-                      <div className="text-center">
+                      <div className="text-start sm:text-center">
                         <div className="text-sm text-gray-500 mb-1">כללי</div>
-                        <div className={`text-2xl font-bold ${getAverageColor(subject.overall.average, subject.overall.isUncalculateable)}`}>
+                        <div className={`text-xl sm:text-2xl font-bold ${getAverageColor(subject.overall.average, subject.overall.isUncalculateable)}`}>
                           {subject.overall.isUncalculateable ? "—" : subject.overall.average.toFixed(1)}
                         </div>
-                        <div className="text-xs text-gray-500 mb-1">
+                        <div className="text-xs text-gray-500 mb-1 mt-0.5 sm:mt-0">
                           {subject.overall.totalWeight}/200
                         </div>
                         {subject.overall.isUncalculateable && (
@@ -221,12 +224,12 @@ export function SubjectAveragesList({
           
           {sortedSubjects.some(s => s.overall.hasMissingData || s.period1.hasMissingData || s.period2.hasMissingData) && (
             <motion.div 
-              className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-inner"
+              className="mt-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-xl shadow-inner"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <p className="text-red-800 mb-3">
+              <p className="text-red-800 mb-3 text-sm sm:text-base">
                 זוהו מקצועות עם מידע חסר. לחישוב ממוצע מדוייק יותר, מומלץ להשלים את המידע החסר.
               </p>
             </motion.div>

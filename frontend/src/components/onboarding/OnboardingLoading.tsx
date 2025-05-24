@@ -69,13 +69,13 @@ export function OnboardingLoading({ onComplete }: OnboardingLoadingProps) {
 
   return (
     <motion.div 
-      className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center"
+      className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       <motion.div 
-        className="text-center space-y-8 max-w-md mx-auto px-4"
+        className="text-center space-y-6 sm:space-y-8 max-w-md mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -87,12 +87,12 @@ export function OnboardingLoading({ onComplete }: OnboardingLoadingProps) {
         >
           {/* Outer spinning circle */}
           <motion.div 
-            className="w-32 h-32 border-8 border-gray-200 rounded-full mx-auto relative"
+            className="w-24 h-24 sm:w-32 sm:h-32 border-6 sm:border-8 border-gray-200 rounded-full mx-auto relative"
             variants={spinnerVariants}
             animate="animate"
           >
             <div 
-              className="absolute top-0 left-0 w-32 h-32 border-8 border-transparent border-t-purple-600 border-r-purple-600 rounded-full"
+              className="absolute top-0 left-0 w-full h-full border-6 sm:border-8 border-transparent border-t-purple-600 border-r-purple-600 rounded-full"
               style={{
                 background: `conic-gradient(from 0deg, #9333ea ${progress * 3.6}deg, transparent ${progress * 3.6}deg)`
               }}
@@ -107,19 +107,19 @@ export function OnboardingLoading({ onComplete }: OnboardingLoadingProps) {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <CurrentIcon className={`w-8 h-8 ${steps[currentStep].color}`} />
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+              <CurrentIcon className={`w-6 h-6 sm:w-8 sm:h-8 ${steps[currentStep].color}`} />
             </div>
           </motion.div>
         </motion.div>
         
         {/* Step Information */}
         <motion.div 
-          className="space-y-4"
+          className="space-y-2 sm:space-y-4"
           variants={itemVariants}
         >
           <motion.h2 
-            className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
+            className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"
             key={`title-${currentStep}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,7 +129,7 @@ export function OnboardingLoading({ onComplete }: OnboardingLoadingProps) {
           </motion.h2>
           
           <motion.p 
-            className="text-gray-600"
+            className="text-gray-600 text-sm sm:text-base"
             key={`text-${currentStep}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -141,19 +141,19 @@ export function OnboardingLoading({ onComplete }: OnboardingLoadingProps) {
         
         {/* Progress Bar */}
         <motion.div 
-          className="w-64 mx-auto"
+          className="w-full max-w-[240px] sm:max-w-[256px] mx-auto"
           variants={itemVariants}
         >
-          <div className="w-full bg-gray-200 rounded-full h-3 shadow-inner">
+          <div className="w-full bg-gray-200 rounded-full h-2.5 sm:h-3 shadow-inner">
             <motion.div 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 h-3 rounded-full transition-all duration-100 ease-linear shadow-sm"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 h-2.5 sm:h-3 rounded-full transition-all duration-100 ease-linear shadow-sm"
               style={{ width: `${progress}%` }}
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
             ></motion.div>
           </div>
           <motion.p 
-            className="text-sm text-gray-500 mt-2 font-medium"
+            className="text-xs sm:text-sm text-gray-500 mt-1.5 sm:mt-2 font-medium"
             variants={itemVariants}
           >
             {Math.round(progress)}%

@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiService, Grade } from '@/lib/api';
 import { ArrowLeft, Loader, Save, Plus, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getUncalculateableSubjects, isSubjectCalculateable } from '@/utils/gradeUtils';
 
 interface MissingDataEditorProps {
   onBack: () => void;
@@ -56,6 +57,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
   const [selectedPeriods, setSelectedPeriods] = useState<Record<string, number>>({}); // Track selected period per subject
   const [selectedExistingGrade, setSelectedExistingGrade] = useState<Record<string, string>>({}); // Track selected existing grade per subject
   const [openGradeDropdowns, setOpenGradeDropdowns] = useState<Record<string, boolean>>({}); // Track which grade dropdowns are open
+  const [uncalculateableSubjects, setUncalculateableSubjects] = useState<any[]>([]);
   const { toast } = useToast();
 
   // Animation variants
@@ -106,6 +108,11 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
       
       const gradesP1 = p1Response.data || [];
       const gradesP2 = p2Response.data || [];
+      const allGrades = [...gradesP1, ...gradesP2];
+      
+      // Calculate uncalculateable subjects
+      const uncalcSubjects = getUncalculateableSubjects(allGrades);
+      setUncalculateableSubjects(uncalcSubjects);
       
       // Group by subject for each period separately
       const subjectGroupsP1: { [key: string]: Grade[] } = {};
@@ -155,20 +162,33 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
       // Load saved custom grades from local storage
       const savedCustomGrades = loadCustomGrades();
       
+      let updatedSubjects: SubjectData[];
       if (savedCustomGrades) {
         // Merge saved custom grades with subject data
-        const updatedSubjects = subjects.map(subject => {
+        updatedSubjects = subjects.map(subject => {
           const saved = savedCustomGrades[subject.subject];
           return {
             ...subject,
             customGrades: saved || []
           };
         });
-        
-        setSubjectsData(updatedSubjects);
       } else {
-        setSubjectsData(subjects);
+        updatedSubjects = subjects;
       }
+      
+      // מיון מקצועות: מקצועות עם מידע חסר ראשונים
+      const sortedSubjects = updatedSubjects.sort((a, b) => {
+        const aHasMissingData = a.period1.missingWeight > 0 || a.period2.missingWeight > 0;
+        const bHasMissingData = b.period1.missingWeight > 0 || b.period2.missingWeight > 0;
+        
+        if (aHasMissingData && !bHasMissingData) return -1;
+        if (!aHasMissingData && bHasMissingData) return 1;
+        
+        // אם שני המקצועות עם או בלי מידע חסר, מיון לפי שם
+        return a.subject.localeCompare(b.subject, 'he');
+      });
+      
+      setSubjectsData(sortedSubjects);
     } catch (error) {
       console.error('Failed to load data:', error);
       toast({
@@ -198,30 +218,19 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
     
     subjectsData.forEach(subject => {
       if (subject.customGrades.length > 0) {
-        // Ensure all custom grades have the correct period_id assigned
-        const gradesWithPeriods = subject.customGrades.map(grade => {
-          // If period_id is missing, determine it from the subject's regular grades
-          if (!grade.period_id) {
-            // Find the most common period_id for this subject from both periods
-            const allGrades = [...subject.period1.grades, ...subject.period2.grades];
-            const periodCounts = allGrades.reduce((acc, g) => {
-              acc[g.period_id] = (acc[g.period_id] || 0) + 1;
-              return acc;
-            }, {} as Record<number, number>);
-            
-            // Use the most common period_id or default to 1538 (period 1)
-            const mostCommonPeriod = Object.entries(periodCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '1538';
-            
-            return { ...grade, period_id: parseInt(mostCommonPeriod) };
-          }
-          return grade;
-        });
-        
-        customGradesMap[subject.subject] = gradesWithPeriods;
+        customGradesMap[subject.subject] = subject.customGrades;
       }
     });
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(customGradesMap));
+    
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 2000);
+  };
+
+  // Helper function to check if a subject/period is uncalculateable
+  const isSubjectPeriodUncalculateable = (subject: string, periodId: number): boolean => {
+    return !isSubjectCalculateable(subject, periodId, uncalculateableSubjects);
   };
 
   const addCustomGrade = (subjectIndex: number) => {
@@ -472,7 +481,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
             >
               <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
                 <div className="text-4xl mb-4">
-                  {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 ? "📝" : "✅"}
+                  {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 ? "🚨" : "✅"}
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">
                   {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 
@@ -482,7 +491,16 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                 </h2>
               <p className="text-gray-600 text-lg">
                   {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 
-                    ? `זוהו ${subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length} מקצועות עם מידע חסר. השלם את המידע כדי לקבל ממוצע מדוייק יותר.`
+                    ? (() => {
+                        const missingCount = subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length;
+                        return (
+                          <span>
+                            זוהו <span className="font-bold text-red-600">{missingCount} מקצועות עם מידע חסר</span>. 
+                            מקצועות אלה מופיעים ראשונים ומסומנים בבירור. 
+                            השלם את המידע כדי לקבל ממוצע מדוייק יותר.
+                          </span>
+                        );
+                      })()
                     : `כל ${subjectsData.length} המקצועות שלך זמינים לעריכה. תוכל לערוך ציונים קיימים או להוסיף מרכיבי הערכה חדשים.`
                   }
               </p>
@@ -499,12 +517,27 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                   whileHover={{ y: -5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <Card className="shadow-lg border-0 overflow-hidden transition-all hover:shadow-xl bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+                  <Card className={`shadow-lg border-0 overflow-hidden transition-all hover:shadow-xl bg-white/80 backdrop-blur-sm ${
+                    (subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) 
+                      ? 'ring-2 ring-red-200 shadow-red-100' 
+                      : ''
+                  }`}>
+                    <CardHeader className={`border-b ${
+                      (subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0)
+                        ? 'bg-gradient-to-r from-red-50 to-orange-50'
+                        : 'bg-gradient-to-r from-blue-50 to-purple-50'
+                    }`}>
                       <div className="flex justify-between items-center">
                         <CardTitle className="font-bold flex items-center gap-3">
-                          <span className="text-2xl">📚</span>
+                          <span className="text-2xl">
+                            {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) ? '🔴' : '📚'}
+                          </span>
                           {subject.subject}
+                          {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) && (
+                            <Badge variant="destructive" className="animate-pulse text-sm px-3 py-1">
+                              ⚠️ דורש תשומת לב
+                            </Badge>
+                          )}
                         </CardTitle>
                         <div className="flex space-x-2 space-x-reverse">
                           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -513,9 +546,19 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                             מחצית ב׳: {calculateTotalWeightWithCustom(subject, 1539)}%
                           </Badge>
+                          {isSubjectPeriodUncalculateable(subject.subject, 1538) && (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                              מחצית א׳ לא מחושבת
+                            </Badge>
+                          )}
+                          {isSubjectPeriodUncalculateable(subject.subject, 1539) && (
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                              מחצית ב׳ לא מחושבת
+                            </Badge>
+                          )}
                           {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) && (
-                            <Badge variant="destructive" className="animate-pulse">
-                              יש מידע חסר
+                            <Badge variant="destructive" className="animate-pulse font-semibold">
+                              🚨 יש מידע חסר
                             </Badge>
                           )}
                         </div>
@@ -530,9 +573,14 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                               משקל: {calculateTotalWeightWithCustom(subject, 1538)}%
                             </Badge>
+                            {isSubjectPeriodUncalculateable(subject.subject, 1538) && (
+                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                                לא מחושב
+                              </Badge>
+                            )}
                             {subject.period1.missingWeight > 0 && (
-                              <Badge variant="destructive" className="animate-pulse">
-                                חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1538))}%
+                              <Badge variant="destructive" className="animate-pulse font-semibold">
+                                🚨 חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1538))}%
                               </Badge>
                             )}
                           </div>
@@ -540,7 +588,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
 
                         {/* Existing Grades Dropdown - Period 1 */}
                         {subject.period1.grades.length > 0 && (
-                      <div className="mb-6">
+                          <div className="mb-6">
                             <Collapsible 
                               open={openGradeDropdowns[`${subject.subject}_1538`]} 
                               onOpenChange={(open) => setOpenGradeDropdowns(prev => ({
@@ -555,21 +603,22 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                 >
                                   <span className="font-semibold">
                                     ציונים קיימים במחצית א׳ ({subject.period1.grades.length})
-                          </span>
+                                  </span>
                                   {openGradeDropdowns[`${subject.subject}_1538`] ? 
                                     <ChevronDown className="h-4 w-4" /> : 
                                     <ChevronRight className="h-4 w-4" />
                                   }
                                 </Button>
                               </CollapsibleTrigger>
-                              <CollapsibleContent className="space-y-2 max-h-48 overflow-y-auto">
+                              <CollapsibleContent className="space-y-2">
+                                <div className="space-y-2 p-2 bg-blue-25 rounded-lg border border-blue-100">
                                 {subject.period1.grades.map((grade) => (
                             <motion.div 
                                     key={grade.evaluationID}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                                     whileHover={{ scale: 1.02 }}
-                                    className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-blue-200 hover:border-blue-300 transition-all"
+                                    className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-blue-200 hover:border-blue-300 transition-all shadow-sm"
                                   >
                                     <div className="flex-1">
                                       <div className="flex items-center gap-3">
@@ -596,6 +645,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                     </motion.div>
                             </motion.div>
                           ))}
+                                </div>
                               </CollapsibleContent>
                             </Collapsible>
                         </div>
@@ -734,9 +784,14 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                               משקל: {calculateTotalWeightWithCustom(subject, 1539)}%
                             </Badge>
+                            {isSubjectPeriodUncalculateable(subject.subject, 1539) && (
+                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                                לא מחושב
+                              </Badge>
+                            )}
                             {subject.period2.missingWeight > 0 && (
-                              <Badge variant="destructive" className="animate-pulse">
-                                חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1539))}%
+                              <Badge variant="destructive" className="animate-pulse font-semibold">
+                                🚨 חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1539))}%
                               </Badge>
                             )}
                           </div>
@@ -766,28 +821,29 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                   }
                                 </Button>
                               </CollapsibleTrigger>
-                              <CollapsibleContent className="space-y-2 max-h-48 overflow-y-auto">
+                              <CollapsibleContent className="space-y-2">
+                                <div className="space-y-2 p-2 bg-green-25 rounded-lg border border-green-100">
                                 {subject.period2.grades.map((grade) => (
-                                  <motion.div 
+                            <motion.div 
                                     key={grade.evaluationID}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
                                     whileHover={{ scale: 1.02 }}
-                                    className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-green-200 hover:border-green-300 transition-all"
+                                    className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-green-200 hover:border-green-300 transition-all shadow-sm"
                                   >
                                     <div className="flex-1">
                                       <div className="flex items-center gap-3">
                                         <span className="font-medium text-gray-900">{grade.title}</span>
                                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
                                           {grade.type}
-                                        </Badge>
-                                      </div>
+                                  </Badge>
+                                </div>
                                       <div className="text-sm text-gray-600 mt-1">
                                         ציון: <span className="font-medium">{grade.grade}</span>{" "}•{" "}
                                         משקל: <span className="font-medium">{grade.weight}%</span>{" "}•{" "}
                                         תאריך: <span className="font-medium">{new Date(grade.date).toLocaleDateString('he-IL')}</span>
-                                      </div>
-                                    </div>
+                                </div>
+                              </div>
                                     <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                                       <Button
                                         variant="outline"
@@ -798,11 +854,12 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                         ✏️ ערוך
                                       </Button>
                                     </motion.div>
-                                  </motion.div>
-                                ))}
+                            </motion.div>
+                          ))}
+                                </div>
                               </CollapsibleContent>
                             </Collapsible>
-                          </div>
+                        </div>
                         )}
 
                         {/* Custom Grades for Period 2 */}

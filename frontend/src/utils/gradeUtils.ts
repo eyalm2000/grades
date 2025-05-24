@@ -297,12 +297,24 @@ export const calculateDetailedSubjectAverages = (
     const p2TotalWeight = p2RegularWeight + p2CustomWeight;
     const p2Average = p2IsUncalculateable ? 0 : calculateWeightedAverage(p2Grades, p2CustomGrades);
     
-    // Overall data (both periods combined)
-    const allGrades = [...p1Grades, ...p2Grades];
-    const allCustomGrades = [...p1CustomGrades, ...p2CustomGrades];
+    // Overall data - calculate as average between periods, not combined grades
     const overallIsUncalculateable = p1IsUncalculateable && p2IsUncalculateable;
     const overallTotalWeight = p1TotalWeight + p2TotalWeight;
-    const overallAverage = overallIsUncalculateable ? 0 : calculateWeightedAverage(allGrades, allCustomGrades);
+    
+    // Calculate overall average as mean of period averages (only if both periods have calculable data)
+    let overallAverage = 0;
+    if (!overallIsUncalculateable) {
+      if (!p1IsUncalculateable && !p2IsUncalculateable && p1Average > 0 && p2Average > 0) {
+        // Both periods have data - average them
+        overallAverage = (p1Average + p2Average) / 2;
+      } else if (!p1IsUncalculateable && p1Average > 0) {
+        // Only period 1 has data
+        overallAverage = p1Average;
+      } else if (!p2IsUncalculateable && p2Average > 0) {
+        // Only period 2 has data
+        overallAverage = p2Average;
+      }
+    }
     
     return {
       subject,

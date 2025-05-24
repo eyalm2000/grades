@@ -144,25 +144,38 @@ export function GradesBySubject({ grades, customGrades }: GradesBySubjectProps) 
                               }
                               return b.grade - a.grade;
                             })
-                            .map((grade, index) => (
-                              <tr key={index} className="border-b border-gray-50 last:border-0">
-                                <td className="py-2">
-                                  {grade.title}
-                                </td>
-                                <td className="py-2 font-medium">
-                                  {grade.grade}
-                                </td>
-                                <td className="py-2">
-                                  {grade.weight}%
-                                </td>
-                                <td className="py-2">
-                                  {grade.type}
-                                </td>
-                                <td className="py-2">
-                                  {grade.period_id === 1538 ? 'א׳' : grade.period_id === 1539 ? 'ב׳' : ''}
-                                </td>
-                              </tr>
-                            ))}
+                            .map((grade, index) => {
+                              // Check if this specific grade is from an uncalculateable period
+                              const isGradeUncalculateable = 'period_id' in grade && grade.period_id && 
+                                !isSubjectCalculateable(grade.subject, grade.period_id, uncalculateableSubjects);
+                              
+                              return (
+                                <tr key={index} className={`border-b border-gray-50 last:border-0 ${isGradeUncalculateable ? 'opacity-60 bg-yellow-50' : ''}`}>
+                                  <td className="py-2">
+                                    <div className="flex items-center gap-2">
+                                      {grade.title}
+                                      {isGradeUncalculateable && (
+                                        <Badge variant="secondary" className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300">
+                                          לא מחושב
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="py-2 font-medium">
+                                    {isGradeUncalculateable ? "—" : grade.grade}
+                                  </td>
+                                  <td className="py-2">
+                                    {grade.weight}%
+                                  </td>
+                                  <td className="py-2">
+                                    {grade.type}
+                                  </td>
+                                  <td className="py-2">
+                                    {grade.period_id === 1538 ? 'א׳' : grade.period_id === 1539 ? 'ב׳' : ''}
+                                  </td>
+                                </tr>
+                              );
+                            })}
                         </tbody>
                       </table>
                     </div>

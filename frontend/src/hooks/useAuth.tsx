@@ -37,10 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } catch (error) {
             console.error("Failed to fetch user image:", error);
           }
-          // Fetch grades here if available
+          // Fetch grades for both periods
           try {
-            const gradesResponse = await apiService.getGradesPeriod1();
-            setGradesPeriod1(gradesResponse.data);
+            const [gradesP1Response, gradesP2Response] = await Promise.all([
+              apiService.getGradesPeriod1(),
+              apiService.getGradesPeriod2()
+            ]);
+            setGradesPeriod1(gradesP1Response.data);
+            setGradesPeriod2(gradesP2Response.data);
           } catch (error) {
             console.error("Failed to fetch grades:", error);
           }
@@ -67,10 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userImageUrl = await apiService.getUserImage();
         setUser(userInfo);
         setUserImage(userImageUrl);
-        // Fetch grades after login
+        // Fetch grades for both periods after login
         try {
-          const gradesData = await apiService.getGradesPeriod1();
-          setGradesPeriod1(gradesData.data);
+          const [gradesP1Data, gradesP2Data] = await Promise.all([
+            apiService.getGradesPeriod1(),
+            apiService.getGradesPeriod2()
+          ]);
+          setGradesPeriod1(gradesP1Data.data);
+          setGradesPeriod2(gradesP2Data.data);
         } catch (error) {
           console.error("Failed to fetch grades after login:", error);
         }
@@ -106,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         user,
         userImage,
-        grades: getGradesPeriod1,
+        grades: [...getGradesPeriod1, ...getGradesPeriod2],
         gradesPeriod1: getGradesPeriod1,
         gradesPeriod2: getGradesPeriod2,
         login,

@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useToast } from '@/hooks/use-toast';
 import { apiService, Grade } from '@/lib/api';
-import { ArrowLeft, Loader, Save, Plus, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader, Save, Plus, CheckCircle2, ChevronDown, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface MissingDataEditorProps {
@@ -16,19 +17,26 @@ interface MissingDataEditorProps {
 
 interface SubjectData {
   subject: string;
+  period1: PeriodData;
+  period2: PeriodData;
+  customGrades: CustomGrade[];
+}
+
+interface PeriodData {
   grades: Grade[];
   totalWeight: number;
   missingWeight: number;
-  customGrades: CustomGrade[];
 }
 
 interface CustomGrade {
   id: string;
   title: string;
-  grade: number;
+  grade: number | string | null | undefined;
   weight: number;
   type: string;
   period_id?: number; // Added period_id to track which period the grade belongs to
+  isExisting?: boolean; // Track if this is an existing grade being edited
+  originalGradeId?: number; // Store original evaluationID if editing existing grade
 }
 
 const gradeTypes = [
@@ -45,6 +53,9 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
   const [subjectsData, setSubjectsData] = useState<SubjectData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [selectedPeriods, setSelectedPeriods] = useState<Record<string, number>>({}); // Track selected period per subject
+  const [selectedExistingGrade, setSelectedExistingGrade] = useState<Record<string, string>>({}); // Track selected existing grade per subject
+  const [openGradeDropdowns, setOpenGradeDropdowns] = useState<Record<string, boolean>>({}); // Track which grade dropdowns are open
   const { toast } = useToast();
 
   // Animation variants
@@ -93,30 +104,53 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
         apiService.getGradesPeriod2()
       ]);
       
-      const allGrades = [...(p1Response.data || []), ...(p2Response.data || [])];
+      const gradesP1 = p1Response.data || [];
+      const gradesP2 = p2Response.data || [];
       
-      // Group by subject
-      const subjectGroups: { [key: string]: Grade[] } = {};
-      allGrades.forEach(grade => {
-        if (!subjectGroups[grade.subject]) {
-          subjectGroups[grade.subject] = [];
+      // Group by subject for each period separately
+      const subjectGroupsP1: { [key: string]: Grade[] } = {};
+      const subjectGroupsP2: { [key: string]: Grade[] } = {};
+      
+      gradesP1.forEach(grade => {
+        if (!subjectGroupsP1[grade.subject]) {
+          subjectGroupsP1[grade.subject] = [];
         }
-        subjectGroups[grade.subject].push(grade);
+        subjectGroupsP1[grade.subject].push(grade);
       });
       
-      // Calculate missing weights
-      const subjects: SubjectData[] = Object.entries(subjectGroups).map(([subject, grades]) => {
-        const totalWeight = grades.reduce((sum, grade) => sum + grade.weight, 0);
-        const missingWeight = Math.max(0, 100 - totalWeight);
+      gradesP2.forEach(grade => {
+        if (!subjectGroupsP2[grade.subject]) {
+          subjectGroupsP2[grade.subject] = [];
+        }
+        subjectGroupsP2[grade.subject].push(grade);
+      });
+      
+      // Get all unique subjects from both periods
+      const allSubjects = new Set([...Object.keys(subjectGroupsP1), ...Object.keys(subjectGroupsP2)]);
+      
+      // Create subject data with separate periods
+      const subjects: SubjectData[] = Array.from(allSubjects).map(subject => {
+        const p1Grades = subjectGroupsP1[subject] || [];
+        const p2Grades = subjectGroupsP2[subject] || [];
+        
+        const p1TotalWeight = p1Grades.reduce((sum, grade) => sum + grade.weight, 0);
+        const p2TotalWeight = p2Grades.reduce((sum, grade) => sum + grade.weight, 0);
         
         return {
           subject,
-          grades,
-          totalWeight,
-          missingWeight,
+          period1: {
+            grades: p1Grades,
+            totalWeight: p1TotalWeight,
+            missingWeight: Math.max(0, 100 - p1TotalWeight)
+          },
+          period2: {
+            grades: p2Grades,
+            totalWeight: p2TotalWeight,
+            missingWeight: Math.max(0, 100 - p2TotalWeight)
+          },
           customGrades: []
         };
-      }).filter(subject => subject.missingWeight > 0);
+      });
       
       // Load saved custom grades from local storage
       const savedCustomGrades = loadCustomGrades();
@@ -168,8 +202,9 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
         const gradesWithPeriods = subject.customGrades.map(grade => {
           // If period_id is missing, determine it from the subject's regular grades
           if (!grade.period_id) {
-            // Find the most common period_id for this subject
-            const periodCounts = subject.grades.reduce((acc, g) => {
+            // Find the most common period_id for this subject from both periods
+            const allGrades = [...subject.period1.grades, ...subject.period2.grades];
+            const periodCounts = allGrades.reduce((acc, g) => {
               acc[g.period_id] = (acc[g.period_id] || 0) + 1;
               return acc;
             }, {} as Record<number, number>);
@@ -190,25 +225,9 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
   };
 
   const addCustomGrade = (subjectIndex: number) => {
-    // Determine the most common period_id from the subject's grades
+    // Use the currently selected period for this subject
     const subject = subjectsData[subjectIndex];
-    
-    // Count the occurrences of each period_id
-    const periodCounts: Record<number, number> = {};
-    subject.grades.forEach(grade => {
-      periodCounts[grade.period_id] = (periodCounts[grade.period_id] || 0) + 1;
-    });
-    
-    // Find the most common period_id
-    let mostCommonPeriodId = 1538; // Default to period 1 if no other information
-    let maxCount = 0;
-    
-    Object.entries(periodCounts).forEach(([periodId, count]) => {
-      if (count > maxCount) {
-        maxCount = count;
-        mostCommonPeriodId = parseInt(periodId);
-      }
-    });
+    const selectedPeriodId = selectedPeriods[subject.subject] || 1538;
     
     const newGrade: CustomGrade = {
       id: Date.now().toString(),
@@ -216,7 +235,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
       grade: 0,
       weight: 1,
       type: 'מבחן',
-      period_id: mostCommonPeriodId
+      period_id: selectedPeriodId
     };
     
     setSubjectsData(prev => prev.map((subject, index) => 
@@ -243,6 +262,57 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
     updateCustomGrade(subjectIndex, gradeId, 'period_id', periodId);
   };
 
+  const makeGradeEditable = (subjectIndex: number, grade: Grade) => {
+    const editableGrade: CustomGrade = {
+      id: `existing_${grade.evaluationID}`,
+      title: grade.title,
+      grade: grade.grade,
+      weight: grade.weight,
+      type: grade.type,
+      period_id: grade.period_id,
+      isExisting: true,
+      originalGradeId: grade.evaluationID
+    };
+
+    setSubjectsData(prev => prev.map((subject, index) => 
+      index === subjectIndex 
+        ? { 
+            ...subject, 
+            customGrades: [...subject.customGrades, editableGrade],
+            period1: {
+              ...subject.period1,
+              grades: subject.period1.grades.filter(g => g.evaluationID !== grade.evaluationID)
+            },
+            period2: {
+              ...subject.period2,
+              grades: subject.period2.grades.filter(g => g.evaluationID !== grade.evaluationID)
+            }
+          }
+        : subject
+    ));
+  };
+
+  const revertGradeToOriginal = (subjectIndex: number, customGradeId: string) => {
+    const subject = subjectsData[subjectIndex];
+    const customGrade = subject.customGrades.find(g => g.id === customGradeId);
+    
+    if (customGrade && customGrade.isExisting && customGrade.originalGradeId) {
+      // Find the original grade data - we need to reload it
+      // For now, we'll just remove the custom grade and it will appear as original again
+      setSubjectsData(prev => prev.map((s, index) => 
+        index === subjectIndex 
+          ? {
+              ...s,
+              customGrades: s.customGrades.filter(g => g.id !== customGradeId)
+            }
+          : s
+      ));
+      
+      // Reload data to restore original grade
+      loadData();
+    }
+  };
+
   const removeCustomGrade = (subjectIndex: number, gradeId: string) => {
     setSubjectsData(prev => prev.map((subject, index) => 
       index === subjectIndex 
@@ -254,9 +324,19 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
     ));
   };
 
-  const calculateTotalWeightWithCustom = (subject: SubjectData) => {
+  const calculateTotalWeightWithCustom = (subject: SubjectData, periodId?: number) => {
+    if (periodId) {
+      // Calculate for specific period
+      const periodData = periodId === 1538 ? subject.period1 : subject.period2;
+      const customWeight = subject.customGrades
+        .filter(grade => grade.period_id === periodId)
+        .reduce((sum, grade) => sum + grade.weight, 0);
+      return periodData.totalWeight + customWeight;
+    } else {
+      // Calculate total for both periods (for overall display)
     const customWeight = subject.customGrades.reduce((sum, grade) => sum + grade.weight, 0);
-    return subject.totalWeight + customWeight;
+      return subject.period1.totalWeight + subject.period2.totalWeight + customWeight;
+    }
   };
 
   const saveChanges = () => {
@@ -390,9 +470,23 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
               className="text-center mb-8"
               variants={itemVariants}
             >
+              <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                <div className="text-4xl mb-4">
+                  {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 ? "📝" : "✅"}
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 
+                    ? "עריכת ציונים ומידע חסר" 
+                    : "עריכת ציונים"
+                  }
+                </h2>
               <p className="text-gray-600 text-lg">
-                זוהו {subjectsData.length} מקצועות עם מידע חסר. השלם את המידע כדי לקבל ממוצע מדוייק יותר.
+                  {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 
+                    ? `זוהו ${subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length} מקצועות עם מידע חסר. השלם את המידע כדי לקבל ממוצע מדוייק יותר.`
+                    : `כל ${subjectsData.length} המקצועות שלך זמינים לעריכה. תוכל לערוך ציונים קיימים או להוסיף מרכיבי הערכה חדשים.`
+                  }
               </p>
+              </div>
             </motion.div>
 
             {subjectsData.map((subject, subjectIndex) => (
@@ -408,91 +502,150 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                   <Card className="shadow-lg border-0 overflow-hidden transition-all hover:shadow-xl bg-white/80 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
                       <div className="flex justify-between items-center">
-                        <CardTitle className="font-bold">{subject.subject}</CardTitle>
+                        <CardTitle className="font-bold flex items-center gap-3">
+                          <span className="text-2xl">📚</span>
+                          {subject.subject}
+                        </CardTitle>
                         <div className="flex space-x-2 space-x-reverse">
-                          <Badge variant="outline" className="bg-white/80 backdrop-blur-sm">
-                            משקל נוכחי: {calculateTotalWeightWithCustom(subject)}%
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            מחצית א׳: {calculateTotalWeightWithCustom(subject, 1538)}%
                           </Badge>
-                          {subject.missingWeight > 0 && (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            מחצית ב׳: {calculateTotalWeightWithCustom(subject, 1539)}%
+                          </Badge>
+                          {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) && (
                             <Badge variant="destructive" className="animate-pulse">
-                              חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject))}%
+                              יש מידע חסר
                             </Badge>
                           )}
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="p-6">
-                      {/* Existing Grades */}
+                      {/* Period 1 */}
+                      <div className="mb-8">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-blue-700">מחצית א׳</h3>
+                          <div className="flex space-x-2 space-x-reverse">
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              משקל: {calculateTotalWeightWithCustom(subject, 1538)}%
+                            </Badge>
+                            {subject.period1.missingWeight > 0 && (
+                              <Badge variant="destructive" className="animate-pulse">
+                                חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1538))}%
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Existing Grades Dropdown - Period 1 */}
+                        {subject.period1.grades.length > 0 && (
                       <div className="mb-6">
-                        <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                          <span className="bg-blue-100 text-blue-800 p-1 rounded-md ml-2 w-6 h-6 inline-flex items-center justify-center">
-                            {subject.grades.length}
+                            <Collapsible 
+                              open={openGradeDropdowns[`${subject.subject}_1538`]} 
+                              onOpenChange={(open) => setOpenGradeDropdowns(prev => ({
+                                ...prev,
+                                [`${subject.subject}_1538`]: open
+                              }))}
+                            >
+                              <CollapsibleTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  className="w-full justify-between mb-3 hover:bg-blue-50"
+                                >
+                                  <span className="font-semibold">
+                                    ציונים קיימים במחצית א׳ ({subject.period1.grades.length})
                           </span>
-                          ציונים קיימים:
-                        </h4>
-                        <div className="space-y-2">
-                          {subject.grades.map((grade, index) => (
+                                  {openGradeDropdowns[`${subject.subject}_1538`] ? 
+                                    <ChevronDown className="h-4 w-4" /> : 
+                                    <ChevronRight className="h-4 w-4" />
+                                  }
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="space-y-2 max-h-48 overflow-y-auto">
+                                {subject.period1.grades.map((grade) => (
                             <motion.div 
-                              key={index}
+                                    key={grade.evaluationID}
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.05 * index }}
-                              whileHover={{ x: 2 }}
-                            >
-                              <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-blue-200 transition-colors">
-                                <div>
-                                  <span className="font-medium">{grade.title}</span>
-                                  <span className="text-gray-600 mr-2 text-sm">({grade.type})</span>
-                                  <Badge variant="outline" className="text-xs mr-2 bg-white">
-                                    {grade.period_id === 1538 ? 'מחצית א׳' : 'מחצית ב׳'}
+                                    whileHover={{ scale: 1.02 }}
+                                    className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-blue-200 hover:border-blue-300 transition-all"
+                                  >
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3">
+                                        <span className="font-medium text-gray-900">{grade.title}</span>
+                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                                          {grade.type}
                                   </Badge>
                                 </div>
-                                <div className="text-left">
-                                  <span className="font-bold text-lg">{grade.grade}</span>
-                                  <span className="text-gray-600 mr-2 text-sm">משקל: {grade.weight}%</span>
+                                      <div className="text-sm text-gray-600 mt-1">
+                                        ציון: <span className="font-medium">{grade.grade}</span>{" "}•{" "}
+                                        משקל: <span className="font-medium">{grade.weight}%</span>{" "}•{" "}
+                                        תאריך: <span className="font-medium">{new Date(grade.date).toLocaleDateString('he-IL')}</span>
                                 </div>
                               </div>
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => makeGradeEditable(subjectIndex, grade)}
+                                        className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-sm px-3"
+                                      >
+                                        ✏️ ערוך
+                                      </Button>
+                                    </motion.div>
                             </motion.div>
                           ))}
+                              </CollapsibleContent>
+                            </Collapsible>
                         </div>
-                      </div>
+                        )}
 
-                      {/* Custom Grades */}
-                      {subject.customGrades.length > 0 && (
-                        <div className="mb-6">
+                        {/* Custom Grades for Period 1 */}
+                        {(() => {
+                          const period1CustomGrades = subject.customGrades.filter(g => g.period_id === 1538);
+                          return period1CustomGrades.length > 0 && (
+                            <div className="mb-4">
                           <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                            <span className="bg-purple-100 text-purple-800 p-1 rounded-md ml-2 w-6 h-6 inline-flex items-center justify-center">
-                              {subject.customGrades.length}
+                                <span className="bg-blue-100 text-blue-800 p-1 rounded-md ml-2 w-6 h-6 inline-flex items-center justify-center">
+                                  {period1CustomGrades.length}
                             </span>
-                            מרכיבי הערכה שהוספת:
+                                ציונים בעריכה:
                           </h4>
-                          <div className="space-y-4">
-                            {subject.customGrades.map((customGrade) => (
-                              <motion.div 
+                              <div className="space-y-3">
+                                {period1CustomGrades.map((customGrade) => (
+                                  <div 
                                 key={customGrade.id}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ type: "spring", stiffness: 300 }}
-                                whileHover={{ scale: 1.01 }}
-                              >
-                                <div className="p-4 border rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 shadow-sm">
-                                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                    className={`p-3 border rounded-lg shadow-sm ${
+                                      customGrade.isExisting 
+                                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200' 
+                                        : 'bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200'
+                                    }`}
+                                  >
+                                    {customGrade.isExisting && (
+                                      <div className="mb-2">
+                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
+                                          ציון קיים בעריכה
+                                        </Badge>
+                                      </div>
+                                    )}
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                     <div>
-                                      <Label className="text-gray-700">שם המרכיב</Label>
+                                        <Label className="text-gray-700 text-xs">שם המרכיב</Label>
                                       <Input
                                         value={customGrade.title}
                                         onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'title', e.target.value)}
                                         placeholder="למשל: מבחן חזרה"
-                                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
                                       />
                                     </div>
                                     <div>
-                                      <Label className="text-gray-700">סוג</Label>
+                                        <Label className="text-gray-700 text-xs">סוג</Label>
                                       <Select
                                         value={customGrade.type}
                                         onValueChange={(value) => updateCustomGrade(subjectIndex, customGrade.id, 'type', value)}
                                       >
-                                        <SelectTrigger className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
+                                          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -505,18 +658,19 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                       </Select>
                                     </div>
                                     <div>
-                                      <Label className="text-gray-700">ציון</Label>
+                                        <Label className="text-gray-700 text-xs">ציון</Label>
                                       <Input
                                         type="number"
                                         min="0"
                                         max="100"
-                                        value={customGrade.grade}
-                                        onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'grade', Number(e.target.value))}
-                                        className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                                          value={customGrade.grade || ''}
+                                          onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'grade', e.target.value ? Number(e.target.value) : '')}
+                                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                          placeholder="הזן ציון"
                                       />
                                     </div>
                                     <div>
-                                      <Label className="text-gray-700">משקל (%)</Label>
+                                        <Label className="text-gray-700 text-xs">משקל (%)</Label>
                                       <div className="flex space-x-2 space-x-reverse">
                                         <Input
                                           type="number"
@@ -524,53 +678,254 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                           max="100"
                                           value={customGrade.weight}
                                           onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'weight', Number(e.target.value))}
-                                          className="border-gray-300 focus:border-purple-500 focus:ring-purple-500"
-                                        />
-                                        <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                            className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                          />
+                                          <div className="flex space-x-1 space-x-reverse">
+                                            {customGrade.isExisting && (
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => revertGradeToOriginal(subjectIndex, customGrade.id)}
+                                                className="hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-300 text-xs px-2"
+                                              >
+                                                ↶
+                                              </Button>
+                                            )}
                                           <Button
                                             variant="outline"
                                             size="sm"
                                             onClick={() => removeCustomGrade(subjectIndex, customGrade.id)}
-                                            className="hover:bg-red-50 hover:text-red-600 hover:border-red-300"
+                                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-xs px-2"
                                           >
                                             ✕
                                           </Button>
-                                        </motion.div>
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
-                                    <div>
-                                      <Label className="text-gray-700">מחצית</Label>
-                                      <Select
-                                        value={customGrade.period_id?.toString() || "1538"}
-                                        onValueChange={(value) => setPeriodForCustomGrade(subjectIndex, customGrade.id, parseInt(value))}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedPeriods(prev => ({...prev, [subject.subject]: 1538}));
+                            addCustomGrade(subjectIndex);
+                          }}
+                          className="w-full border-dashed border-2 hover:border-blue-400 hover:bg-blue-50 transition-colors font-medium text-sm"
+                        >
+                          <Plus className="w-4 h-4 ml-2" />
+                          הוסף מרכיב הערכה למחצית א׳
+                        </Button>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="border-t border-gray-200 mb-8"></div>
+
+                      {/* Period 2 */}
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-green-700">מחצית ב׳</h3>
+                          <div className="flex space-x-2 space-x-reverse">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              משקל: {calculateTotalWeightWithCustom(subject, 1539)}%
+                            </Badge>
+                            {subject.period2.missingWeight > 0 && (
+                              <Badge variant="destructive" className="animate-pulse">
+                                חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1539))}%
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Existing Grades Dropdown - Period 2 */}
+                        {subject.period2.grades.length > 0 && (
+                          <div className="mb-6">
+                            <Collapsible 
+                              open={openGradeDropdowns[`${subject.subject}_1539`]} 
+                              onOpenChange={(open) => setOpenGradeDropdowns(prev => ({
+                                ...prev,
+                                [`${subject.subject}_1539`]: open
+                              }))}
+                            >
+                              <CollapsibleTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  className="w-full justify-between mb-3 hover:bg-green-50"
+                                >
+                                  <span className="font-semibold">
+                                    ציונים קיימים במחצית ב׳ ({subject.period2.grades.length})
+                                  </span>
+                                  {openGradeDropdowns[`${subject.subject}_1539`] ? 
+                                    <ChevronDown className="h-4 w-4" /> : 
+                                    <ChevronRight className="h-4 w-4" />
+                                  }
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="space-y-2 max-h-48 overflow-y-auto">
+                                {subject.period2.grades.map((grade) => (
+                                  <motion.div 
+                                    key={grade.evaluationID}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    whileHover={{ scale: 1.02 }}
+                                    className="flex items-center justify-between p-3 bg-white/60 rounded-lg border border-green-200 hover:border-green-300 transition-all"
+                                  >
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-3">
+                                        <span className="font-medium text-gray-900">{grade.title}</span>
+                                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                          {grade.type}
+                                        </Badge>
+                                      </div>
+                                      <div className="text-sm text-gray-600 mt-1">
+                                        ציון: <span className="font-medium">{grade.grade}</span>{" "}•{" "}
+                                        משקל: <span className="font-medium">{grade.weight}%</span>{" "}•{" "}
+                                        תאריך: <span className="font-medium">{new Date(grade.date).toLocaleDateString('he-IL')}</span>
+                                      </div>
+                                    </div>
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => makeGradeEditable(subjectIndex, grade)}
+                                        className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 text-sm px-3"
                                       >
-                                        <SelectTrigger className="border-gray-300 focus:border-purple-500 focus:ring-purple-500">
+                                        ✏️ ערוך
+                                      </Button>
+                                    </motion.div>
+                                  </motion.div>
+                                ))}
+                              </CollapsibleContent>
+                            </Collapsible>
+                          </div>
+                        )}
+
+                        {/* Custom Grades for Period 2 */}
+                        {(() => {
+                          const period2CustomGrades = subject.customGrades.filter(g => g.period_id === 1539);
+                          return period2CustomGrades.length > 0 && (
+                            <div className="mb-4">
+                              <h4 className="font-medium text-gray-900 mb-3 flex items-center">
+                                <span className="bg-green-100 text-green-800 p-1 rounded-md ml-2 w-6 h-6 inline-flex items-center justify-center">
+                                  {period2CustomGrades.length}
+                                </span>
+                                ציונים בעריכה:
+                              </h4>
+                              <div className="space-y-3">
+                                {period2CustomGrades.map((customGrade) => (
+                                  <div 
+                                    key={customGrade.id}
+                                    className={`p-3 border rounded-lg shadow-sm ${
+                                      customGrade.isExisting 
+                                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
+                                        : 'bg-gradient-to-r from-purple-50 to-green-50 border-purple-200'
+                                    }`}
+                                  >
+                                    {customGrade.isExisting && (
+                                      <div className="mb-2">
+                                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300 text-xs">
+                                          ציון קיים בעריכה
+                                        </Badge>
+                                      </div>
+                                    )}
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                      <div>
+                                        <Label className="text-gray-700 text-xs">שם המרכיב</Label>
+                                        <Input
+                                          value={customGrade.title}
+                                          onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'title', e.target.value)}
+                                          placeholder="למשל: מבחן חזרה"
+                                          className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm"
+                                        />
+                                      </div>
+                                      <div>
+                                        <Label className="text-gray-700 text-xs">סוג</Label>
+                                        <Select
+                                          value={customGrade.type}
+                                          onValueChange={(value) => updateCustomGrade(subjectIndex, customGrade.id, 'type', value)}
+                                        >
+                                          <SelectTrigger className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="1538">מחצית א׳</SelectItem>
-                                          <SelectItem value="1539">מחצית ב׳</SelectItem>
+                                            {gradeTypes.map(type => (
+                                              <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                              </SelectItem>
+                                            ))}
                                         </SelectContent>
                                       </Select>
+                                      </div>
+                                      <div>
+                                        <Label className="text-gray-700 text-xs">ציון</Label>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          max="100"
+                                          value={customGrade.grade || ''}
+                                          onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'grade', e.target.value ? Number(e.target.value) : '')}
+                                          className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm"
+                                          placeholder="הזן ציון"
+                                        />
+                                      </div>
+                                      <div>
+                                        <Label className="text-gray-700 text-xs">משקל (%)</Label>
+                                        <div className="flex space-x-2 space-x-reverse">
+                                          <Input
+                                            type="number"
+                                            min="1"
+                                            max="100"
+                                            value={customGrade.weight}
+                                            onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'weight', Number(e.target.value))}
+                                            className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm"
+                                          />
+                                          <div className="flex space-x-1 space-x-reverse">
+                                            {customGrade.isExisting && (
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => revertGradeToOriginal(subjectIndex, customGrade.id)}
+                                                className="hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-300 text-xs px-2"
+                                              >
+                                                ↶
+                                              </Button>
+                                            )}
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => removeCustomGrade(subjectIndex, customGrade.id)}
+                                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-xs px-2"
+                                            >
+                                              ✕
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </motion.div>
                             ))}
                           </div>
                         </div>
-                      )}
+                          );
+                        })()}
 
-                      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                         <Button
                           variant="outline"
-                          onClick={() => addCustomGrade(subjectIndex)}
-                          className="w-full border-dashed border-2 hover:border-purple-400 hover:bg-purple-50 transition-colors font-medium"
+                          onClick={() => {
+                            setSelectedPeriods(prev => ({...prev, [subject.subject]: 1539}));
+                            addCustomGrade(subjectIndex);
+                          }}
+                          className="w-full border-dashed border-2 hover:border-green-400 hover:bg-green-50 transition-colors font-medium text-sm"
                         >
                           <Plus className="w-4 h-4 ml-2" />
-                          הוסף מרכיב הערכה
+                          הוסף מרכיב הערכה למחצית ב׳
                         </Button>
-                      </motion.div>
+                      </div>
                     </CardContent>
                   </Card>
                 </motion.div>

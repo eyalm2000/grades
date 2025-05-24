@@ -63,11 +63,11 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
   const faqItems = [
     {
       question: "האם המידע שלי מאובטח?",
-      answer: "כן, אנחנו משתמשים באותן שיטות הצפנה וגישות אבטחה כמו משהב. המידע שלך מוגן ברמה הגבוהה ביותר ולא נשמר על השרתים שלנו."
+      answer: "כן, אנחנו משתמשים באותן שיטות הצפנה וגישות אבטחה כמו משרד החינוך. המידע שלך מוגן ברמה הגבוהה ביותר ולא נשמר על השרתים שלנו."
     },
     {
       question: "איך המערכת מחשבת את הממוצעים?",
-      answer: "המערכת מחשבת ממוצעים משוכללים על פי המשקלים של כל מרכיב הערכה, בדיוק כפי שמחשב משהב. אנחנו מזהים גם מידע חסר ומאפשרים השלמה ידנית."
+      answer: "המערכת מחשבת ממוצעים משוכללים על פי המשקלים של כל מרכיב הערכה, בדיוק כפי שמחשב משרד החינוך. אנחנו מזהים גם מידע חסר ומאפשרים השלמה ידנית."
     },
     {
       question: "מה קורה אם יש לי ציונים חסרים?",
@@ -79,7 +79,7 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
     },
     {
       question: "כמה זמן לוקח להתחבר למערכת?",
-      answer: "תהליך ההתחברות יכול לקחת עד 15 שניות בשל הצורך להתחבר לשרתי משהב ולוודא את הזהות שלך. זה נורמלי ובטוח לחלוטין."
+      answer: "תהליך ההתחברות יכול לקחת עד 15 שניות בשל הצורך להתחבר לשרתי משרד החינוך ולוודא את הזהות שלך. זה נורמלי ובטוח לחלוטין."
     }
   ];
 
@@ -115,7 +115,7 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
               ← חזרה לדף הבית
             </Button>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">כניסה למערכת</h1>
-            <p className="text-gray-600">השתמש בפרטי הכניסה שלך למשהב</p>
+            <p className="text-gray-600">השתמש בפרטי הכניסה שלך למשרד החינוך</p>
           </div>
 
           <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'lg:grid-cols-2'} items-start`}>
@@ -124,7 +124,7 @@ export function LoginPage({ onLogin, onBack }: LoginPageProps) {
               <CardHeader>
                 <CardTitle>כניסה לחשבון</CardTitle>
                 <CardDescription>
-                  הזן את פרטי הכניסה שלך למשהב כדי לגשת למערכת
+                  הזן את פרטי הכניסה שלך למשרד החינוך כדי לגשת למערכת
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -1,12 +1,15 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiService, UserInfo } from "@/lib/api";
+import { Grade } from "@/types/grades";
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: UserInfo | null;
   userImage: string | null;
+  grades: Grade[];
+  gradesPeriod1: Grade[];
+  gradesPeriod2: Grade[];
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -18,6 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [userImage, setUserImage] = useState<string | null>(null);
+  const [getGradesPeriod1, setGradesPeriod1] = useState<Grade[]>([]);
+  const [getGradesPeriod2, setGradesPeriod2] = useState<Grade[]>([]);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -31,6 +36,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUserImage(userImageUrl);
           } catch (error) {
             console.error("Failed to fetch user image:", error);
+          }
+          // Fetch grades here if available
+          try {
+            const gradesResponse = await apiService.getGradesPeriod1();
+            setGradesPeriod1(gradesResponse.data);
+          } catch (error) {
+            console.error("Failed to fetch grades:", error);
           }
           setIsAuthenticated(true);
         }
@@ -53,9 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.success) {
         const userInfo = await apiService.getUserInfo();
         const userImageUrl = await apiService.getUserImage();
-        
         setUser(userInfo);
         setUserImage(userImageUrl);
+        // Fetch grades after login
+        try {
+          const gradesData = await apiService.getGradesPeriod1();
+          setGradesPeriod1(gradesData.data);
+        } catch (error) {
+          console.error("Failed to fetch grades after login:", error);
+        }
         setIsAuthenticated(true);
         return true;
       }
@@ -88,6 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         user,
         userImage,
+        grades: getGradesPeriod1,
+        gradesPeriod1: getGradesPeriod1,
+        gradesPeriod2: getGradesPeriod2,
         login,
         logout,
       }}

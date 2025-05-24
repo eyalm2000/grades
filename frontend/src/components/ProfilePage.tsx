@@ -116,7 +116,7 @@ export function ProfilePage({ onBack, onEditMissingData, onLogout }: ProfilePage
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>• המערכת מתחברת לשרתי משהב לקבלת נתוני הציונים</p>
+                <p>• המערכת מתחברת לשרתי משרד החינוך לקבלת נתוני הציונים</p>
                 <p>• הנתונים מעודכנים בזמן אמת מהמערכת הרשמית</p>
                 <p>• המידע שלך מוגן ומוצפן ברמה הגבוהה ביותר</p>
                 <p>• אנחנו לא שומרים סיסמאות או מידע רגיש אחר</p>

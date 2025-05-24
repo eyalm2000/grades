@@ -13,6 +13,9 @@ import { OnboardingLoading } from '@/components/onboarding/OnboardingLoading';
 import { Dashboard } from '@/components/Dashboard';
 import { MissingDataEditor } from '@/components/MissingDataEditor';
 import { ProfilePage } from '@/components/ProfilePage';
+import { OnboardingUncalculateable } from '@/components/onboarding/OnboardingUncalculateable';
+import { getUncalculateableSubjects } from './utils/gradeUtils';
+import { UncalculateableSubject } from "@/types/grades";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +24,7 @@ type AppState =
   | 'login'
   | 'onboarding-welcome'
   | 'onboarding-privacy'
+  | 'onboarding-uncalculateable'
   | 'onboarding-missing-data'
   | 'onboarding-loading'
   | 'dashboard'
@@ -123,8 +127,24 @@ function AppContent() {
     case 'onboarding-privacy':
       return (
         <OnboardingPrivacy
-          onNext={() => setAppState('onboarding-missing-data')}
+          onNext={() => {
+            const uncalculateableSubjects = getUncalculateableSubjects(auth.grades);
+            if (uncalculateableSubjects.length > 0) {
+              setAppState('onboarding-uncalculateable');
+            } else {
+              setAppState('onboarding-missing-data');
+            }
+          }}
           onBack={() => setAppState('onboarding-welcome')}
+        />
+      );
+
+    case 'onboarding-uncalculateable':
+      return (
+        <OnboardingUncalculateable
+          uncalculateableSubjects={getUncalculateableSubjects(auth.grades) as UncalculateableSubject[]}
+          onNext={() => setAppState('onboarding-missing-data')}
+          onBack={() => setAppState('onboarding-privacy')}
         />
       );
 
@@ -133,7 +153,14 @@ function AppContent() {
         <OnboardingMissingData
           onEditMissingData={() => setAppState('missing-data-editor')}
           onSkip={() => setAppState('onboarding-loading')}
-          onBack={() => setAppState('onboarding-privacy')}
+          onBack={() => {
+            const uncalculateableSubjects = getUncalculateableSubjects(auth.grades);
+            if (uncalculateableSubjects.length > 0) {
+              setAppState('onboarding-uncalculateable');
+            } else {
+              setAppState('onboarding-privacy');
+            }
+          }}
         />
       );
 

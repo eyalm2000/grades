@@ -1,22 +1,16 @@
-
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SubjectAverage, Period } from "@/types/grades";
+import { DetailedSubjectAverage } from "@/types/grades";
 
 interface SubjectAveragesListProps {
-  subjectAverages: SubjectAverage[];
-  selectedPeriod: Period;
-  onPeriodChange: (value: Period) => void;
+  detailedSubjectAverages: DetailedSubjectAverage[];
   onEditMissingData: () => void;
 }
 
 export function SubjectAveragesList({ 
-  subjectAverages, 
-  selectedPeriod, 
-  onPeriodChange,
+  detailedSubjectAverages,
   onEditMissingData
 }: SubjectAveragesListProps) {
   const containerVariants = {
@@ -32,25 +26,19 @@ export function SubjectAveragesList({
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
   };
 
+  const getAverageColor = (average: number, isUncalculateable: boolean) => {
+    if (isUncalculateable) return "text-yellow-600";
+    if (average >= 90) return "text-green-600";
+    if (average >= 80) return "text-blue-600";
+    if (average >= 70) return "text-orange-600";
+    return "text-red-600";
+  };
+
   return (
     <motion.div variants={itemVariants}>
       <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm overflow-hidden">
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>ממוצעים לפי מקצוע</CardTitle>
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
-              <Select value={selectedPeriod} onValueChange={(value: Period) => onPeriodChange(value)}>
-                <SelectTrigger className="w-48 bg-white border-purple-200 hover:border-purple-400 transition-colors">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">שתי המחציות</SelectItem>
-                  <SelectItem value="period1">מחצית א׳</SelectItem>
-                  <SelectItem value="period2">מחצית ב׳</SelectItem>
-                </SelectContent>
-              </Select>
-            </motion.div>
-          </div>
+          <CardTitle>ממוצעים לפי מקצוע</CardTitle>
         </CardHeader>
         <CardContent>
           <motion.div 
@@ -59,46 +47,75 @@ export function SubjectAveragesList({
             initial="hidden"
             animate="visible"
           >
-            {subjectAverages.map((subject, index) => (
+            {detailedSubjectAverages.map((subject, index) => (
               <motion.div 
-                key={index}
+                key={subject.subject}
                 variants={itemVariants}
                 whileHover={{ scale: 1.005 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl shadow-sm border border-blue-50">
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <h3 className="font-medium text-gray-900">{subject.subject}</h3>
-                    {subject.hasMissingData && (
-                      <Badge 
-                        variant="destructive" 
-                        className="text-xs"
-                      >
-                        מידע חסר
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <motion.div 
-                      className="text-xl font-bold"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {subject.average.toFixed(1)}
-                    </motion.div>
-                    {subject.hasMissingData && (
-                      <div className="text-xs text-gray-500">
-                        משקל: {subject.totalWeight}%
+                <div className="p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl shadow-sm border border-blue-50">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <h3 className="font-medium text-gray-900">{subject.subject}</h3>
+                      {subject.overall.isUncalculateable && (
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300"
+                        >
+                          לא מחושב
+                        </Badge>
+                      )}
+                      {(subject.overall.hasMissingData || subject.period1.hasMissingData || subject.period2.hasMissingData) && !subject.overall.isUncalculateable && (
+                        <Badge 
+                          variant="destructive" 
+                          className="text-xs"
+                        >
+                          מידע חסר
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-6 space-x-reverse">
+                      {/* Period 1 */}
+                      <div className="text-center">
+                        <div className="text-sm text-gray-500 mb-1">מחצית א׳</div>
+                        <div className={`text-lg font-bold ${getAverageColor(subject.period1.average, subject.period1.isUncalculateable)}`}>
+                          {subject.period1.isUncalculateable ? "—" : subject.period1.average.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {subject.period1.totalWeight}%
+                        </div>
                       </div>
-                    )}
+                      
+                      {/* Period 2 */}
+                      <div className="text-center">
+                        <div className="text-sm text-gray-500 mb-1">מחצית ב׳</div>
+                        <div className={`text-lg font-bold ${getAverageColor(subject.period2.average, subject.period2.isUncalculateable)}`}>
+                          {subject.period2.isUncalculateable ? "—" : subject.period2.average.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {subject.period2.totalWeight}%
+                        </div>
+                      </div>
+                      
+                      {/* Overall Average */}
+                      <div className="text-center">
+                        <div className="text-sm text-gray-500 mb-1">כללי</div>
+                        <div className={`text-2xl font-bold ${getAverageColor(subject.overall.average, subject.overall.isUncalculateable)}`}>
+                          {subject.overall.isUncalculateable ? "—" : subject.overall.average.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {subject.overall.totalWeight}/200
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
           
-          {subjectAverages.some(s => s.hasMissingData) && (
+          {detailedSubjectAverages.some(s => s.overall.hasMissingData || s.period1.hasMissingData || s.period2.hasMissingData) && (
             <motion.div 
               className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-inner"
               initial={{ opacity: 0 }}

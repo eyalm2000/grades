@@ -1,4 +1,3 @@
-
 export interface Grade {
   evaluationID: number;
   title: string;
@@ -7,7 +6,7 @@ export interface Grade {
   typeCode: number;
   teacherFirstName: string;
   teacherLastName: string;
-  grade: number;
+  grade: number | string | null | undefined;
   gradeTranslation: string;
   subject: string;
   level: string;
@@ -29,7 +28,7 @@ export interface Grade {
 export interface CustomGrade {
   id: string;
   title: string;
-  grade: number;
+  grade: number | string | null | undefined;
   weight: number;
   type: string;
   subject: string;
@@ -41,6 +40,34 @@ export interface SubjectAverage {
   average: number;
   hasMissingData: boolean;
   totalWeight: number;
+  isUncalculateable?: boolean;
+}
+
+export interface DetailedSubjectAverage {
+  subject: string;
+  period1: {
+    average: number;
+    hasMissingData: boolean;
+    totalWeight: number;
+    isUncalculateable: boolean;
+  };
+  period2: {
+    average: number;
+    hasMissingData: boolean;
+    totalWeight: number;
+    isUncalculateable: boolean;
+  };
+  overall: {
+    average: number;
+    hasMissingData: boolean;
+    totalWeight: number;
+    isUncalculateable: boolean;
+  };
+}
+
+export interface UncalculateableSubject {
+  subject: string;
+  period: number;
 }
 
 export type Period = 'both' | 'period1' | 'period2';

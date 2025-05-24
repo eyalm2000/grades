@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Grade, CustomGrade } from "@/types/grades";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { getUncalculateableSubjects, isSubjectCalculateable } from "@/utils/gradeUtils";
 
 interface GradesBySubjectProps {
   grades: Grade[];
@@ -11,6 +13,9 @@ interface GradesBySubjectProps {
 
 export function GradesBySubject({ grades, customGrades }: GradesBySubjectProps) {
   const [expandedSubject, setExpandedSubject] = useState<string | null>(null);
+
+  // Get uncalculateable subjects
+  const uncalculateableSubjects = getUncalculateableSubjects(grades);
 
   // Group grades by subject
   const subjectGrades: Record<string, (Grade | CustomGrade)[]> = {};
@@ -83,7 +88,27 @@ export function GradesBySubject({ grades, customGrades }: GradesBySubjectProps) 
                   className="flex justify-between items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg cursor-pointer"
                   onClick={() => toggleSubject(subject)}
                 >
-                  <h3 className="font-medium text-gray-900">{subject}</h3>
+                  <div className="flex items-center space-x-3 space-x-reverse">
+                    <h3 className="font-medium text-gray-900">{subject}</h3>
+                    {(() => {
+                      // Check if this subject is uncalculateable in any period
+                      const subjectIsUncalculateable = subjectGrades[subject].some((grade) => {
+                        if ('period_id' in grade && grade.period_id) {
+                          return !isSubjectCalculateable(grade.subject, grade.period_id, uncalculateableSubjects);
+                        }
+                        return false;
+                      });
+                      
+                      return subjectIsUncalculateable && (
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300"
+                        >
+                          לא מחושב
+                        </Badge>
+                      );
+                    })()}
+                  </div>
                   {expandedSubject === subject ? (
                     <ChevronUp className="w-5 h-5 text-gray-500" />
                   ) : (
@@ -113,7 +138,7 @@ export function GradesBySubject({ grades, customGrades }: GradesBySubjectProps) 
                         <tbody>
                           {subjectGrades[subject]
                             .sort((a, b) => {
-                              // Sort by type first, then by grade
+                              if (a.period_id !== b.period_id) return a.period_id - b.period_id;
                               if ('typeCode' in a && 'typeCode' in b) {
                                 if (a.typeCode !== b.typeCode) return a.typeCode - b.typeCode;
                               }

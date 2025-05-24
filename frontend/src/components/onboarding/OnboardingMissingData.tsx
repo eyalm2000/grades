@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -20,26 +19,24 @@ export function OnboardingMissingData({ onEditMissingData, onSkip, onBack }: Onb
       opacity: 1, 
       transition: { 
         when: "beforeChildren",
-        staggerChildren: 0.2
+        staggerChildren: 0.1
       } 
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
 
   const iconVariants = {
-    hidden: { scale: 0, rotate: -180 },
+    hidden: { scale: 0.9, opacity: 0 },
     visible: { 
       scale: 1, 
-      rotate: 0,
+      opacity: 1,
       transition: { 
-        type: "spring",
-        stiffness: 260,
-        damping: 20,
-        delay: 0.3
+        duration: 0.5,
+        ease: "easeOut"
       }
     }
   };
@@ -75,14 +72,15 @@ export function OnboardingMissingData({ onEditMissingData, onSkip, onBack }: Onb
           className="text-gray-600 leading-relaxed"
           variants={itemVariants}
         >
-          זיהינו שחלק מהציונים שלך עלולים להיות חסרים במערכת משהב. 
+          זיהינו שחלק מהציונים שלך עלולים להיות חסרים במערכת משרד החינוך. 
           זה קורה לפעמים כאשר מורים לא חושפים את כל הציונים לתלמידים.
         </motion.p>
         
         <motion.div 
           className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 shadow-sm"
           variants={itemVariants}
-          whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}
+          whileHover={{ y: -2, boxShadow: "0 8px 15px -3px rgba(0, 0, 0, 0.08)" }}
+          transition={{ duration: 0.2 }}
         >
           <p className="text-blue-800 text-sm">
             <strong>למה זה חשוב?</strong><br />
@@ -100,26 +98,20 @@ export function OnboardingMissingData({ onEditMissingData, onSkip, onBack }: Onb
       </motion.div>
       
       <motion.div className="space-y-3" variants={itemVariants}>
-        <motion.div
-          whileHover="hover"
-          whileTap="tap"
-          variants={buttonVariants}
+        <Button 
+          onClick={onEditMissingData} 
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-xl" 
+          size="lg"
         >
-          <Button 
-            onClick={onEditMissingData} 
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg transition-all" 
-            size="lg"
+          עריכת מידע חסר
+          <motion.span
+            initial={{ x: 0 }}
+            animate={{ x: [-1, 1, -1] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
           >
-            עריכת מידע חסר
-            <motion.span
-              initial={{ x: 0 }}
-              animate={{ x: [-2, 2, -2] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-            </motion.span>
-          </Button>
-        </motion.div>
+            <ArrowLeft className="w-4 h-4 mr-1" />
+          </motion.span>
+        </Button>
         
         <motion.div 
           className="flex justify-center space-x-4 space-x-reverse"
@@ -127,17 +119,21 @@ export function OnboardingMissingData({ onEditMissingData, onSkip, onBack }: Onb
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
         >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="outline" onClick={onBack} className="border-gray-300">
-              <ArrowRight className="w-4 h-4 ml-1" />
-              חזרה
-            </Button>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button variant="outline" onClick={onSkip} className="border-gray-300">
-              דלג (חישוב ממוצע מוערך)
-            </Button>
-          </motion.div>
+          <Button 
+            variant="outline" 
+            onClick={onBack} 
+            className="border-gray-300 transition-all duration-200 hover:scale-105 hover:shadow-md"
+          >
+            <ArrowRight className="w-4 h-4 ml-1" />
+            חזרה
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={onSkip} 
+            className="border-gray-300 transition-all duration-200 hover:scale-105 hover:shadow-md"
+          >
+            דלג (חישוב ממוצע מוערך)
+          </Button>
         </motion.div>
       </motion.div>
     </motion.div>
@@ -151,7 +147,18 @@ export function OnboardingMissingData({ onEditMissingData, onSkip, onBack }: Onb
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {content}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="w-full max-w-lg"
+        >
+          <Card className="border-0 shadow-xl overflow-hidden backdrop-blur-sm bg-white/80">
+            <CardContent className="p-6">
+              {content}
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
     );
   }

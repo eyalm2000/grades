@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +10,7 @@ import { DashboardHeader } from './dashboard/DashboardHeader';
 import { LoadingState } from './dashboard/LoadingState';
 import { GradesBySubject } from './dashboard/GradesBySubject';
 import { Period, CustomGrade } from '@/types/grades';
-import { calculateWeightedAverage, calculateSubjectAverages, getCustomGradesByPeriod, generateInsights } from '@/utils/gradeUtils';
+import { calculateWeightedAverage, calculateSubjectAverages, getCustomGradesByPeriod, generateInsights, getUncalculateableSubjects, isSubjectCalculateable, calculateDetailedSubjectAverages } from '@/utils/gradeUtils';
 
 interface DashboardProps {
   onEditMissingData: () => void;
@@ -60,6 +59,23 @@ export function Dashboard({ onEditMissingData, onProfile }: DashboardProps) {
     }
   };
 
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
+  const insights = generateInsights(gradesP1, gradesP2, customGrades);
+  
+  // Get uncalculateable subjects for filtering
+  const uncalculateableSubjects = getUncalculateableSubjects([...gradesP1, ...gradesP2]);
+  
+  // Filter out uncalculateable subjects from period calculations
+  const calculableGradesP1 = gradesP1.filter(grade => 
+    isSubjectCalculateable(grade.subject, grade.period_id, uncalculateableSubjects)
+  );
+  const calculableGradesP2 = gradesP2.filter(grade => 
+    isSubjectCalculateable(grade.subject, grade.period_id, uncalculateableSubjects)
+  );
+
   const getGradesForPeriod = (): Grade[] => {
     switch (selectedPeriod) {
       case 'period1': return gradesP1;
@@ -68,38 +84,35 @@ export function Dashboard({ onEditMissingData, onProfile }: DashboardProps) {
       default: return [];
     }
   };
-
-  if (isLoading) {
-    return <LoadingState />;
-  }
-
-  const insights = generateInsights(gradesP1, gradesP2, customGrades);
   
-  // Calculate averages including custom grades
-  const p1CustomGrades = Object.values(
-    Object.fromEntries(
-      Object.entries(customGrades)
-        .map(([subject, grades]) => [
-          subject, 
-          grades.filter(g => g.period_id === 1538 || !g.period_id)
-        ])
-    )
-  ).flat();
-  const p2CustomGrades = Object.values(
-    Object.fromEntries(
-      Object.entries(customGrades)
-        .map(([subject, grades]) => [
-          subject, 
-          grades.filter(g => g.period_id === 1539 || !g.period_id)
-        ])
-    )
-  ).flat();
+  // Calculate averages including custom grades (only for calculable subjects)
+  const p1CustomGrades = Object.entries(customGrades)
+    .filter(([subject]) => {
+      // Only include custom grades for subjects that are calculable in period 1
+      return calculableGradesP1.some(grade => grade.subject === subject);
+    })
+    .flatMap(([subject, grades]) => 
+      grades.filter(g => g.period_id === 1538 || !g.period_id)
+    );
+    
+  const p2CustomGrades = Object.entries(customGrades)
+    .filter(([subject]) => {
+      // Only include custom grades for subjects that are calculable in period 2
+      return calculableGradesP2.some(grade => grade.subject === subject);
+    })
+    .flatMap(([subject, grades]) => 
+      grades.filter(g => g.period_id === 1539 || !g.period_id)
+    );
   
-  const p1Average = calculateWeightedAverage(gradesP1, p1CustomGrades);
-  const p2Average = calculateWeightedAverage(gradesP2, p2CustomGrades);
-  const overallAverage = calculateWeightedAverage([...gradesP1, ...gradesP2], Object.values(customGrades).flat());
+  const p1Average = calculateWeightedAverage(calculableGradesP1, p1CustomGrades);
+  const p2Average = calculateWeightedAverage(calculableGradesP2, p2CustomGrades);
+  const overallAverage = calculateWeightedAverage([...calculableGradesP1, ...calculableGradesP2], [...p1CustomGrades, ...p2CustomGrades]);
   
-  const subjectAverages = calculateSubjectAverages(getGradesForPeriod(), getCustomGradesByPeriod(customGrades, selectedPeriod));
+  // Get subject averages for display (includes all subjects but calculations exclude uncalculateable)
+  const subjectAverages = calculateSubjectAverages(getGradesForPeriod(), getCustomGradesByPeriod(customGrades, selectedPeriod), false);
+  
+  // Get detailed subject averages with period-specific data
+  const detailedSubjectAverages = calculateDetailedSubjectAverages(gradesP1, gradesP2, customGrades);
 
   // Simplified animation variants
   const containerVariants = {
@@ -146,9 +159,7 @@ export function Dashboard({ onEditMissingData, onProfile }: DashboardProps) {
 
         {/* Subject Averages */}
         <SubjectAveragesList 
-          subjectAverages={subjectAverages}
-          selectedPeriod={selectedPeriod}
-          onPeriodChange={setSelectedPeriod}
+          detailedSubjectAverages={detailedSubjectAverages}
           onEditMissingData={onEditMissingData}
         />
         

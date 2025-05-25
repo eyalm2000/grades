@@ -396,16 +396,16 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
       >
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 space-x-reverse">
+            <div className="flex items-center space-x-2 sm:space-x-4 space-x-reverse">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="ghost" onClick={onBack} className="hover:bg-purple-50">
-                  <ArrowLeft className="w-4 h-4 ml-2" />
+                <Button variant="ghost" onClick={onBack} className="hover:bg-purple-50 text-sm sm:text-base px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4 ml-1 sm:ml-2" />
                   חזרה
                 </Button>
               </motion.div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">עריכת מידע חסר</h1>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">עריכת מידע חסר</h1>
             </div>
             
             <AnimatePresence>
@@ -415,18 +415,18 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="flex items-center space-x-2 space-x-reverse bg-green-100 text-green-800 px-4 py-2 rounded-lg"
+                  className="flex items-center space-x-1 sm:space-x-2 space-x-reverse bg-green-100 text-green-800 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm"
                 >
-                  <CheckCircle2 className="w-5 h-5 ml-1" />
+                  <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
                   <span>נשמר בהצלחה!</span>
                 </motion.div>
               ) : (
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button 
                     onClick={saveChanges} 
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 h-auto sm:h-9"
                   >
-                    <Save className="w-4 h-4 ml-2" />
+                    <Save className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                     שמור שינויים
                   </Button>
                 </motion.div>
@@ -437,7 +437,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
       </motion.div>
 
       <motion.div 
-        className="container mx-auto px-4 py-8"
+        className="container mx-auto px-2 sm:px-4 py-6 sm:py-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -445,9 +445,9 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
         {subjectsData.length === 0 ? (
           <motion.div variants={itemVariants}>
             <Card className="shadow-xl border-0 overflow-hidden bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-8 text-center">
+              <CardContent className="p-6 sm:p-8 text-center">
                 <motion.div 
-                  className="text-green-600 text-7xl mb-6"
+                  className="text-green-600 text-5xl sm:text-6xl md:text-7xl mb-4 sm:mb-6"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1, rotate: [0, 10, 0] }}
                   transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -455,7 +455,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                   ✅
                 </motion.div>
                 <motion.h2 
-                  className="text-2xl font-bold text-gray-900 mb-4"
+                  className="text-xl sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
@@ -463,7 +463,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                   כל המידע שלך שלם!
                 </motion.h2>
                 <motion.p 
-                  className="text-gray-600 text-lg"
+                  className="text-gray-600 text-base sm:text-lg"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
@@ -476,20 +476,20 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
         ) : (
           <div className="space-y-8">
             <motion.div 
-              className="text-center mb-8"
+              className="text-center mb-6 sm:mb-8"
               variants={itemVariants}
             >
-              <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
-                <div className="text-4xl mb-4">
+              <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl p-4 sm:p-6 border border-purple-200">
+                <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">
                   {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 ? "🚨" : "✅"}
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
                   {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 
                     ? "עריכת ציונים ומידע חסר" 
                     : "עריכת ציונים"
                   }
                 </h2>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 text-sm sm:text-base">
                   {subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length > 0 
                     ? (() => {
                         const missingCount = subjectsData.filter(s => s.period1.missingWeight > 0 || s.period2.missingWeight > 0).length;
@@ -527,59 +527,59 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                         ? 'bg-gradient-to-r from-red-50 to-orange-50'
                         : 'bg-gradient-to-r from-blue-50 to-purple-50'
                     }`}>
-                      <div className="flex justify-between items-center">
-                        <CardTitle className="font-bold flex items-center gap-3">
-                          <span className="text-2xl">
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 sm:gap-3">
+                        <CardTitle className="font-bold flex items-center gap-2 sm:gap-3 text-base sm:text-lg md:text-xl">
+                          <span className="text-xl sm:text-2xl">
                             {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) ? '🔴' : '📚'}
                           </span>
                           {subject.subject}
                           {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) && (
-                            <Badge variant="destructive" className="animate-pulse text-sm px-3 py-1">
+                            <Badge variant="destructive" className="animate-pulse text-xs sm:text-sm px-2 sm:px-3 py-0.5 sm:py-1">
                               ⚠️ דורש תשומת לב
                             </Badge>
                           )}
                         </CardTitle>
-                        <div className="flex space-x-2 space-x-reverse">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                             מחצית א׳: {calculateTotalWeightWithCustom(subject, 1538)}%
                           </Badge>
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
                             מחצית ב׳: {calculateTotalWeightWithCustom(subject, 1539)}%
                           </Badge>
                           {isSubjectPeriodUncalculateable(subject.subject, 1538) && (
-                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
                               מחצית א׳ לא מחושבת
                             </Badge>
                           )}
                           {isSubjectPeriodUncalculateable(subject.subject, 1539) && (
-                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
                               מחצית ב׳ לא מחושבת
                             </Badge>
                           )}
                           {(subject.period1.missingWeight > 0 || subject.period2.missingWeight > 0) && (
-                            <Badge variant="destructive" className="animate-pulse font-semibold">
+                            <Badge variant="destructive" className="animate-pulse font-semibold text-xs">
                               🚨 יש מידע חסר
                             </Badge>
                           )}
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 sm:p-6">
                       {/* Period 1 */}
-                      <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold text-blue-700">מחצית א׳</h3>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      <div className="mb-6 sm:mb-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+                          <h3 className="text-base sm:text-lg font-semibold text-blue-700">מחצית א׳</h3>
+                          <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                               משקל: {calculateTotalWeightWithCustom(subject, 1538)}%
                             </Badge>
                             {isSubjectPeriodUncalculateable(subject.subject, 1538) && (
-                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
                                 לא מחושב
                               </Badge>
                             )}
                             {subject.period1.missingWeight > 0 && (
-                              <Badge variant="destructive" className="animate-pulse font-semibold">
+                              <Badge variant="destructive" className="animate-pulse font-semibold text-xs">
                                 🚨 חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1538))}%
                               </Badge>
                             )}
@@ -588,7 +588,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
 
                         {/* Existing Grades Dropdown - Period 1 */}
                         {subject.period1.grades.length > 0 && (
-                          <div className="mb-6">
+                          <div className="mb-4 sm:mb-6">
                             <Collapsible 
                               open={openGradeDropdowns[`${subject.subject}_1538`]} 
                               onOpenChange={(open) => setOpenGradeDropdowns(prev => ({
@@ -599,7 +599,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                               <CollapsibleTrigger asChild>
                                 <Button 
                                   variant="outline" 
-                                  className="w-full justify-between mb-3 hover:bg-blue-50"
+                                  className="w-full justify-between mb-2 sm:mb-3 hover:bg-blue-50 text-sm sm:text-base px-3 py-2 h-auto"
                                 >
                                   <span className="font-semibold">
                                     ציונים קיימים במחצית א׳ ({subject.period1.grades.length})
@@ -618,27 +618,27 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                                     whileHover={{ scale: 1.02 }}
-                                    className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-blue-200 hover:border-blue-300 transition-all shadow-sm"
+                                    className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-white/80 rounded-lg border border-blue-200 hover:border-blue-300 transition-all shadow-sm"
                                   >
                                     <div className="flex-1">
-                                      <div className="flex items-center gap-3">
-                                        <span className="font-medium text-gray-900">{grade.title}</span>
-                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                                      <div className="flex items-center gap-2 sm:gap-3">
+                                        <span className="font-medium text-gray-900 text-sm sm:text-base">{grade.title}</span>
+                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs px-1.5 py-0.5">
                                           {grade.type}
                                   </Badge>
                                 </div>
-                                      <div className="text-sm text-gray-600 mt-1">
+                                      <div className="text-xs sm:text-sm text-gray-600 mt-1">
                                         ציון: <span className="font-medium">{grade.grade}</span>{" "}•{" "}
                                         משקל: <span className="font-medium">{grade.weight}%</span>{" "}•{" "}
                                         תאריך: <span className="font-medium">{new Date(grade.date).toLocaleDateString('he-IL')}</span>
                                 </div>
                               </div>
-                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="w-full sm:w-auto">
                                       <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => makeGradeEditable(subjectIndex, grade)}
-                                        className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-sm px-3"
+                                        className="hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 h-auto w-full sm:w-auto"
                                       >
                                         ✏️ ערוך
                                       </Button>
@@ -656,37 +656,37 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                           const period1CustomGrades = subject.customGrades.filter(g => g.period_id === 1538);
                           return period1CustomGrades.length > 0 && (
                             <div className="mb-4">
-                          <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                                <span className="bg-blue-100 text-blue-800 p-1 rounded-md ml-2 w-6 h-6 inline-flex items-center justify-center">
+                          <h4 className="font-medium text-gray-900 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                <span className="bg-blue-100 text-blue-800 p-1 rounded-md mr-2 w-5 h-5 sm:w-6 sm:h-6 inline-flex items-center justify-center text-xs sm:text-sm">
                                   {period1CustomGrades.length}
                             </span>
-                                ציונים בעריכה:
+                                ציונים בעריכה (מחצית א׳):
                           </h4>
                               <div className="space-y-3">
                                 {period1CustomGrades.map((customGrade) => (
                                   <div 
                                 key={customGrade.id}
-                                    className={`p-3 border rounded-lg shadow-sm ${
+                                    className={`p-2 sm:p-3 border rounded-lg shadow-sm ${
                                       customGrade.isExisting 
                                         ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200' 
                                         : 'bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200'
                                     }`}
                                   >
                                     {customGrade.isExisting && (
-                                      <div className="mb-2">
-                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
+                                      <div className="mb-1.5 sm:mb-2">
+                                        <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300 text-xs px-1.5 py-0.5">
                                           ציון קיים בעריכה
                                         </Badge>
                                       </div>
                                     )}
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 sm:gap-3">
                                     <div>
                                         <Label className="text-gray-700 text-xs">שם המרכיב</Label>
                                       <Input
                                         value={customGrade.title}
                                         onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'title', e.target.value)}
                                         placeholder="למשל: מבחן חזרה"
-                                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm h-9 sm:h-10"
                                       />
                                     </div>
                                     <div>
@@ -695,7 +695,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                         value={customGrade.type}
                                         onValueChange={(value) => updateCustomGrade(subjectIndex, customGrade.id, 'type', value)}
                                       >
-                                          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm">
+                                          <SelectTrigger className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm h-9 sm:h-10">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -715,20 +715,20 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                         max="100"
                                           value={customGrade.grade || ''}
                                           onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'grade', e.target.value ? Number(e.target.value) : '')}
-                                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                          className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm h-9 sm:h-10"
                                           placeholder="הזן ציון"
                                       />
                                     </div>
                                     <div>
                                         <Label className="text-gray-700 text-xs">משקל (%)</Label>
-                                      <div className="flex space-x-2 space-x-reverse">
+                                      <div className="flex space-x-1 sm:space-x-2 space-x-reverse">
                                         <Input
                                           type="number"
                                           min="1"
                                           max="100"
                                           value={customGrade.weight}
                                           onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'weight', Number(e.target.value))}
-                                            className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                            className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 text-xs sm:text-sm h-9 sm:h-10"
                                           />
                                           <div className="flex space-x-1 space-x-reverse">
                                             {customGrade.isExisting && (
@@ -736,7 +736,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => revertGradeToOriginal(subjectIndex, customGrade.id)}
-                                                className="hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-300 text-xs px-2"
+                                                className="hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-300 text-xs px-1.5 sm:px-2 h-9 sm:h-10"
                                               >
                                                 ↶
                                               </Button>
@@ -745,7 +745,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                             variant="outline"
                                             size="sm"
                                             onClick={() => removeCustomGrade(subjectIndex, customGrade.id)}
-                                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-xs px-2"
+                                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-xs px-1.5 sm:px-2 h-9 sm:h-10"
                                           >
                                             ✕
                                           </Button>
@@ -766,31 +766,31 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                             setSelectedPeriods(prev => ({...prev, [subject.subject]: 1538}));
                             addCustomGrade(subjectIndex);
                           }}
-                          className="w-full border-dashed border-2 hover:border-blue-400 hover:bg-blue-50 transition-colors font-medium text-sm"
+                          className="w-full border-dashed border-2 hover:border-blue-400 hover:bg-blue-50 transition-colors font-medium text-xs sm:text-sm py-2 h-auto"
                         >
-                          <Plus className="w-4 h-4 ml-2" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                           הוסף מרכיב הערכה למחצית א׳
                         </Button>
                       </div>
 
                       {/* Divider */}
-                      <div className="border-t border-gray-200 mb-8"></div>
+                      <div className="border-t border-gray-200 my-4 sm:my-6"></div>
 
                       {/* Period 2 */}
-                      <div className="mb-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold text-green-700">מחצית ב׳</h3>
-                          <div className="flex space-x-2 space-x-reverse">
-                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <div className="mb-4 sm:mb-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+                          <h3 className="text-base sm:text-lg font-semibold text-green-700">מחצית ב׳</h3>
+                          <div className="flex flex-wrap gap-1 sm:gap-2 justify-start sm:justify-end">
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
                               משקל: {calculateTotalWeightWithCustom(subject, 1539)}%
                             </Badge>
                             {isSubjectPeriodUncalculateable(subject.subject, 1539) && (
-                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
                                 לא מחושב
                               </Badge>
                             )}
                             {subject.period2.missingWeight > 0 && (
-                              <Badge variant="destructive" className="animate-pulse font-semibold">
+                              <Badge variant="destructive" className="animate-pulse font-semibold text-xs">
                                 🚨 חסר: {Math.max(0, 100 - calculateTotalWeightWithCustom(subject, 1539))}%
                               </Badge>
                             )}
@@ -799,7 +799,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
 
                         {/* Existing Grades Dropdown - Period 2 */}
                         {subject.period2.grades.length > 0 && (
-                          <div className="mb-6">
+                          <div className="mb-4 sm:mb-6">
                             <Collapsible 
                               open={openGradeDropdowns[`${subject.subject}_1539`]} 
                               onOpenChange={(open) => setOpenGradeDropdowns(prev => ({
@@ -810,7 +810,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                               <CollapsibleTrigger asChild>
                                 <Button 
                                   variant="outline" 
-                                  className="w-full justify-between mb-3 hover:bg-green-50"
+                                  className="w-full justify-between mb-2 sm:mb-3 hover:bg-green-50 text-sm sm:text-base px-3 py-2 h-auto"
                                 >
                                   <span className="font-semibold">
                                     ציונים קיימים במחצית ב׳ ({subject.period2.grades.length})
@@ -829,27 +829,27 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                               initial={{ opacity: 0, x: -20 }}
                               animate={{ opacity: 1, x: 0 }}
                                     whileHover={{ scale: 1.02 }}
-                                    className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-green-200 hover:border-green-300 transition-all shadow-sm"
+                                    className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between p-2 sm:p-3 bg-white/80 rounded-lg border border-green-200 hover:border-green-300 transition-all shadow-sm"
                                   >
                                     <div className="flex-1">
-                                      <div className="flex items-center gap-3">
-                                        <span className="font-medium text-gray-900">{grade.title}</span>
-                                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                      <div className="flex items-center gap-2 sm:gap-3">
+                                        <span className="font-medium text-gray-900 text-sm sm:text-base">{grade.title}</span>
+                                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-1.5 py-0.5">
                                           {grade.type}
                                   </Badge>
                                 </div>
-                                      <div className="text-sm text-gray-600 mt-1">
+                                      <div className="text-xs sm:text-sm text-gray-600 mt-1">
                                         ציון: <span className="font-medium">{grade.grade}</span>{" "}•{" "}
                                         משקל: <span className="font-medium">{grade.weight}%</span>{" "}•{" "}
                                         תאריך: <span className="font-medium">{new Date(grade.date).toLocaleDateString('he-IL')}</span>
                                 </div>
                               </div>
-                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="w-full sm:w-auto">
                                       <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => makeGradeEditable(subjectIndex, grade)}
-                                        className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 text-sm px-3"
+                                        className="hover:bg-green-50 hover:text-green-700 hover:border-green-300 text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 h-auto w-full sm:w-auto"
                                       >
                                         ✏️ ערוך
                                       </Button>
@@ -867,37 +867,37 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                           const period2CustomGrades = subject.customGrades.filter(g => g.period_id === 1539);
                           return period2CustomGrades.length > 0 && (
                             <div className="mb-4">
-                              <h4 className="font-medium text-gray-900 mb-3 flex items-center">
-                                <span className="bg-green-100 text-green-800 p-1 rounded-md ml-2 w-6 h-6 inline-flex items-center justify-center">
+                          <h4 className="font-medium text-gray-900 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                <span className="bg-green-100 text-green-800 p-1 rounded-md mr-2 w-5 h-5 sm:w-6 sm:h-6 inline-flex items-center justify-center text-xs sm:text-sm">
                                   {period2CustomGrades.length}
                                 </span>
-                                ציונים בעריכה:
+                                ציונים בעריכה (מחצית ב׳):
                               </h4>
                               <div className="space-y-3">
                                 {period2CustomGrades.map((customGrade) => (
                                   <div 
                                     key={customGrade.id}
-                                    className={`p-3 border rounded-lg shadow-sm ${
+                                    className={`p-2 sm:p-3 border rounded-lg shadow-sm ${
                                       customGrade.isExisting 
                                         ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200' 
                                         : 'bg-gradient-to-r from-purple-50 to-green-50 border-purple-200'
                                     }`}
                                   >
                                     {customGrade.isExisting && (
-                                      <div className="mb-2">
-                                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300 text-xs">
+                                      <div className="mb-1.5 sm:mb-2">
+                                        <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-300 text-xs px-1.5 py-0.5">
                                           ציון קיים בעריכה
                                         </Badge>
                                       </div>
                                     )}
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 sm:gap-3">
                                       <div>
                                         <Label className="text-gray-700 text-xs">שם המרכיב</Label>
                                         <Input
                                           value={customGrade.title}
                                           onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'title', e.target.value)}
                                           placeholder="למשל: מבחן חזרה"
-                                          className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm"
+                                          className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-xs sm:text-sm h-9 sm:h-10"
                                         />
                                       </div>
                                       <div>
@@ -906,7 +906,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                           value={customGrade.type}
                                           onValueChange={(value) => updateCustomGrade(subjectIndex, customGrade.id, 'type', value)}
                                         >
-                                          <SelectTrigger className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
+                                          <SelectTrigger className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-xs sm:text-sm h-9 sm:h-10">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -926,20 +926,20 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                           max="100"
                                           value={customGrade.grade || ''}
                                           onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'grade', e.target.value ? Number(e.target.value) : '')}
-                                          className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm"
+                                          className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-xs sm:text-sm h-9 sm:h-10"
                                           placeholder="הזן ציון"
                                         />
                                       </div>
                                       <div>
                                         <Label className="text-gray-700 text-xs">משקל (%)</Label>
-                                        <div className="flex space-x-2 space-x-reverse">
+                                        <div className="flex space-x-1 sm:space-x-2 space-x-reverse">
                                           <Input
                                             type="number"
                                             min="1"
                                             max="100"
                                             value={customGrade.weight}
                                             onChange={(e) => updateCustomGrade(subjectIndex, customGrade.id, 'weight', Number(e.target.value))}
-                                            className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm"
+                                            className="border-gray-300 focus:border-green-500 focus:ring-green-500 text-xs sm:text-sm h-9 sm:h-10"
                                           />
                                           <div className="flex space-x-1 space-x-reverse">
                                             {customGrade.isExisting && (
@@ -947,7 +947,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => revertGradeToOriginal(subjectIndex, customGrade.id)}
-                                                className="hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-300 text-xs px-2"
+                                                className="hover:bg-yellow-50 hover:text-yellow-600 hover:border-yellow-300 text-xs px-1.5 sm:px-2 h-9 sm:h-10"
                                               >
                                                 ↶
                                               </Button>
@@ -956,7 +956,7 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                                               variant="outline"
                                               size="sm"
                                               onClick={() => removeCustomGrade(subjectIndex, customGrade.id)}
-                                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-xs px-2"
+                                              className="hover:bg-red-50 hover:text-red-600 hover:border-red-300 text-xs px-1.5 sm:px-2 h-9 sm:h-10"
                                             >
                                               ✕
                                             </Button>
@@ -977,9 +977,9 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
                             setSelectedPeriods(prev => ({...prev, [subject.subject]: 1539}));
                             addCustomGrade(subjectIndex);
                           }}
-                          className="w-full border-dashed border-2 hover:border-green-400 hover:bg-green-50 transition-colors font-medium text-sm"
+                          className="w-full border-dashed border-2 hover:border-green-400 hover:bg-green-50 transition-colors font-medium text-xs sm:text-sm py-2 h-auto"
                         >
-                          <Plus className="w-4 h-4 ml-2" />
+                          <Plus className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                           הוסף מרכיב הערכה למחצית ב׳
                         </Button>
                       </div>
@@ -990,24 +990,24 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
             ))}
 
             <motion.div 
-              className="flex justify-center space-x-4 space-x-reverse pt-6"
+              className="flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4 sm:space-x-reverse pt-4 sm:pt-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                 <Button 
                   variant="outline" 
                   onClick={onBack}
-                  className="border-gray-300 hover:bg-gray-100 font-medium"
+                  className="border-gray-300 hover:bg-gray-100 font-medium text-sm sm:text-base w-full sm:w-auto"
                 >
                   ביטול
                 </Button>
               </motion.div>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                 <Button 
                   onClick={saveChanges}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg px-8"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg px-6 sm:px-8 text-sm sm:text-base w-full sm:w-auto"
                 >
                   <Save className="w-4 h-4 ml-2" />
                   שמור שינויים

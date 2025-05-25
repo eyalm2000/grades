@@ -144,10 +144,10 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <Button 
               onClick={onGetStarted}
               size="lg" 
-              className="bg-white text-indigo-700 hover:bg-blue-50 px-6 py-4 text-base sm:px-8 sm:py-6 sm:text-lg font-medium rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              className="bg-white text-indigo-700 hover:bg-blue-50 px-6 py-4 text-base sm:px-8 sm:py-6 sm:text-lg font-medium rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group" // Added group
             >
               התחל עכשיו 
-              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 mr-1 animate-pulse" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 mr-1 animate-pulse group-hover:translate-x-1 transition-transform duration-200" /> {/* Added group-hover effect */}
             </Button>
           </div>
         </div>
@@ -156,7 +156,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       {/* Features Section */}
       <div className="max-w-7xl mx-auto px-4 py-16 sm:py-20">
         <div className="text-center mb-12 sm:mb-16">
-          <Badge className="mb-2 px-4 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 border-0 text-sm">יתרונות</Badge>
+          <Badge className="mb-2 px-4 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-800 border-0 text-sm shadow-md">יתרונות</Badge> {/* Changed shadow-sm to shadow-md */}
           <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent mb-4">
             למה לבחור בGradeWiz?
           </h2>
@@ -171,27 +171,27 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             {features.map((feature, index) => (
               <Card 
                 key={index}
-                className={`cursor-pointer transition-all duration-300 border-0 ${
+                className={`cursor-pointer transition-all duration-300 border-0 rounded-xl ${
                   activeFeature === index 
-                    ? 'border-0 shadow-lg shadow-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50' 
-                    : 'hover:shadow-md bg-white'
+                    ? 'shadow-xl shadow-indigo-300/70 bg-gradient-to-r from-indigo-50 to-purple-50 scale-105 ring-2 ring-purple-500' 
+                    : 'hover:shadow-lg bg-white/70 hover:bg-white backdrop-blur-sm'
                 }`}
                 onClick={() => setActiveFeature(index)}
               >
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 space-x-reverse">
-                    <div className={`p-2 sm:p-3 rounded-full ${
+                    <div className={`p-2 sm:p-3 rounded-full transition-colors duration-300 ${
                       activeFeature === index 
-                        ? 'bg-gradient-to-br from-indigo-100 to-purple-100' 
-                        : 'bg-gray-100'
+                        ? 'bg-gradient-to-br from-indigo-200 to-purple-200' 
+                        : 'bg-gray-100 group-hover:bg-gray-200' // Assuming Card is group
                     }`}>
                       {feature.icon}
                     </div>
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
+                      <h3 className={`text-lg sm:text-xl font-bold mb-1 transition-colors duration-300 ${activeFeature === index ? 'text-purple-700' : 'text-gray-900'}`}>
                         {feature.title}
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-600">
+                      <p className={`text-sm sm:text-base transition-colors duration-300 ${activeFeature === index ? 'text-purple-600' : 'text-gray-600'}`}>
                         {feature.description}
                       </p>
                     </div>
@@ -202,10 +202,21 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           </div>
 
           {/* Feature Demo */}
-          <div className="lg:pr-8">
-            <div className="transition-all duration-500 transform hover:scale-105">
-              {features[activeFeature].demo}
-            </div>
+          <div className="lg:pr-8 relative min-h-[300px] sm:min-h-[350px] md:min-h-[400px]"> {/* Added relative and min-height */}
+            <AnimatePresence mode="wait"> {/* Changed from exitBeforeEnter to mode="wait" */}
+              <motion.div
+                key={activeFeature}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full" // Added positioning
+              >
+                <div className="transition-all duration-500 transform hover:scale-105 w-full h-full"> {/* Ensure demo card takes full space */}
+                  {features[activeFeature].demo}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
@@ -214,17 +225,17 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       <div className="bg-gradient-to-r from-indigo-900 to-purple-900 text-white py-12 sm:py-16 shadow-inner">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-6 sm:gap-8 text-center">
-            <div className="p-4 sm:p-6 rounded-xl hover:bg-white/5 transition-colors">
-              <div className="text-4xl sm:text-5xl font-bold text-blue-300 mb-2 flex justify-center">100%</div>
-              <div className="text-gray-300 text-base sm:text-lg">דיוק בחישוב ממוצעים</div>
+            <div className="p-4 sm:p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 group">
+              <div className="text-4xl sm:text-5xl font-bold text-blue-300 mb-2 flex items-center justify-center transition-colors duration-300 group-hover:text-blue-200">100%</div>
+              <div className="text-gray-300 text-base sm:text-lg transition-colors duration-300 group-hover:text-gray-200">דיוק בחישוב ממוצעים</div>
             </div>
-            <div className="p-4 sm:p-6 rounded-xl hover:bg-white/5 transition-colors">
-              <div className="text-4xl sm:text-5xl font-bold text-purple-300 mb-2 flex justify-center">⚡</div>
-              <div className="text-gray-300 text-base sm:text-lg">עדכונים בזמן אמת</div>
+            <div className="p-4 sm:p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 group">
+              <div className="text-4xl sm:text-5xl font-bold text-purple-300 mb-2 flex items-center justify-center transition-colors duration-300 group-hover:text-purple-200">⚡</div>
+              <div className="text-gray-300 text-base sm:text-lg transition-colors duration-300 group-hover:text-gray-200">עדכונים בזמן אמת</div>
             </div>
-            <div className="p-4 sm:p-6 rounded-xl hover:bg-white/5 transition-colors">
-              <div className="text-4xl sm:text-5xl font-bold text-green-300 mb-2 flex justify-center">🔒</div>
-              <div className="text-gray-300 text-base sm:text-lg">אבטחת מידע מתקדמת</div>
+            <div className="p-4 sm:p-6 rounded-xl hover:bg-white/10 transition-all duration-300 transform hover:scale-105 group">
+              <div className="text-4xl sm:text-5xl font-bold text-green-300 mb-2 flex items-center justify-center transition-colors duration-300 group-hover:text-green-200">🔒</div>
+              <div className="text-gray-300 text-base sm:text-lg transition-colors duration-300 group-hover:text-gray-200">אבטחת מידע מתקדמת</div>
             </div>
           </div>
         </div>
@@ -242,9 +253,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
           <Button 
             onClick={onGetStarted}
             size="lg"
-            className="bg-white text-indigo-700 hover:bg-blue-50 px-6 py-4 text-base sm:px-8 sm:py-6 sm:text-lg font-medium rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+            className="bg-white text-indigo-700 hover:bg-blue-50 px-6 py-4 text-base sm:px-8 sm:py-6 sm:text-lg font-medium rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group" // Added group
           >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-2 transition-transform duration-200 group-hover:-translate-x-1" /> {/* Added group-hover effect */}
             כניסה למערכת
           </Button>
         </div>

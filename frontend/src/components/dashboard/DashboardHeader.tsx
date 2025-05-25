@@ -18,10 +18,10 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
       transition={{ duration: 0.5 }}
       className="bg-white/80 backdrop-blur-md shadow-sm border-b sticky top-0 z-10"
     >
-      <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+      <div className="container mx-auto px-3 py-3">
+        <div className="flex flex-row items-center justify-between">
           <motion.h1 
-            className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text"
+            className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
@@ -32,30 +32,32 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
             <Button
               variant="ghost"
               onClick={onProfile}
-              className="flex items-center space-x-2 sm:space-x-3 space-x-reverse group bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200 hover:border-purple-300 rounded-xl px-2 sm:px-4 py-2 h-auto transition-all duration-200 self-end sm:self-center"
+              className="flex items-center sm:space-x-2 space-x-reverse group bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200 hover:border-purple-300 rounded-xl p-1.5 sm:px-3 sm:py-2 h-auto transition-all duration-200"
             >
-              <Avatar className="w-10 h-10 ring-2 ring-purple-200 group-hover:ring-purple-400 transition-all duration-200">
+              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-purple-200 group-hover:ring-purple-400 transition-all duration-200">
                 <AvatarImage 
                   src={userImage || ''} 
                   className="object-cover object-center w-full h-full"
                 />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-sm">
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-indigo-500 text-white text-xs sm:text-sm">
                   {user?.firstName.charAt(0) || '?'}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col items-start">
-                <motion.span 
-                  whileHover={{ x: -2 }} 
-                  className="font-medium text-gray-900 group-hover:text-purple-700 transition-colors"
-                >
-                  {user?.firstName} {user?.lastName}
-                </motion.span>
-                <span className="text-xs text-gray-500 group-hover:text-purple-600 flex items-center gap-1 transition-colors">
-                  <User className="w-3 h-3" />
-                  פרופיל אישי
-                </span>
+              <div className="hidden sm:flex sm:flex-col sm:items-start">
+                <div className="flex flex-col items-start">
+                  <motion.span 
+                    whileHover={{ x: -2 }} 
+                    className="font-medium text-gray-900 group-hover:text-purple-700 transition-colors text-sm sm:text-base"
+                  >
+                    {user?.firstName} {user?.lastName}
+                  </motion.span>
+                  <span className="text-xs text-gray-500 group-hover:text-purple-600 flex items-center gap-1 transition-colors">
+                    <User className="w-3 h-3" />
+                    פרופיל אישי
+                  </span>
+                </div>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors" />
+              <ChevronDown className="hidden sm:block w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors" />
             </Button>
           </motion.div>
         </div>

@@ -34,6 +34,7 @@ type AppState =
 function AppContent() {
   const auth = useAuth();
   const [appState, setAppState] = useState<AppState>('landing');
+  const [editorReturnState, setEditorReturnState] = useState<AppState>('dashboard'); // Added editorReturnState
   const [initialAuthCheckComplete, setInitialAuthCheckComplete] = useState(false);
 
   const { user, userImage } = auth;
@@ -151,7 +152,10 @@ function AppContent() {
     case 'onboarding-missing-data':
       return (
         <OnboardingMissingData
-          onEditMissingData={() => setAppState('missing-data-editor')}
+          onEditMissingData={() => {
+            setEditorReturnState('onboarding-missing-data'); // Changed from 'onboarding-loading'
+            setAppState('missing-data-editor');
+          }}
           onSkip={() => setAppState('onboarding-loading')}
           onBack={() => {
             const uncalculateableSubjects = getUncalculateableSubjects(auth.grades);
@@ -174,7 +178,10 @@ function AppContent() {
     case 'dashboard':
       return (
         <Dashboard
-          onEditMissingData={() => setAppState('missing-data-editor')}
+          onEditMissingData={() => {
+            setEditorReturnState('dashboard');
+            setAppState('missing-data-editor');
+          }}
           onProfile={() => setAppState('profile')}
         />
       );
@@ -182,7 +189,11 @@ function AppContent() {
     case 'missing-data-editor':
       return (
         <MissingDataEditor
-          onBack={() => setAppState('dashboard')}
+          onBack={() => {
+            setAppState(editorReturnState);
+            // Optionally reset editorReturnState here if needed for general cases
+            // setEditorReturnState('dashboard'); 
+          }}
         />
       );
 
@@ -190,7 +201,10 @@ function AppContent() {
       return (
         <ProfilePage
           onBack={() => setAppState('dashboard')}
-          onEditMissingData={() => setAppState('missing-data-editor')}
+          onEditMissingData={() => {
+            setEditorReturnState('profile');
+            setAppState('missing-data-editor');
+          }}
           onLogout={handleLogout}
         />
       );

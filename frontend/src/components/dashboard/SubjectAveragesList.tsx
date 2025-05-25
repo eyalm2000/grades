@@ -154,22 +154,22 @@ export function SubjectAveragesList({
                       )}
                       </div>
                     </div>
-                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
+                    <div className="grid grid-cols-3 gap-1 items-start sm:flex sm:flex-row sm:items-center sm:space-x-4 md:space-x-6 w-full sm:w-auto">
                       {/* Period 1 */}
-                      <div className="text-start sm:text-center">
-                        <div className="text-sm text-gray-500 mb-1">מחצית א׳</div>
-                        <div className={`text-base sm:text-lg font-bold ${getAverageColor(subject.period1.average, subject.period1.isUncalculateable)}`}>
+                      <div className="text-start sm:text-center p-1">
+                        <div className="text-xs text-gray-500 mb-0.5 sm:mb-1">מחצית א׳</div>
+                        <div className={`text-sm sm:text-lg font-bold ${getAverageColor(subject.period1.average, subject.period1.isUncalculateable)}`}>
                           {hasNoGradesInPeriod1(subject) ? "—" : 
                            subject.period1.isUncalculateable ? "—" : 
                            subject.period1.average.toFixed(1)}
                         </div>
-                        <div className="text-xs text-gray-500 mb-1">
+                        <div className="text-xs text-gray-500 mb-0.5 sm:mb-1">
                           {hasNoGradesInPeriod1(subject) ? "—" : `${subject.period1.totalWeight}%`}
                         </div>
                         {subject.period1.isUncalculateable && !hasNoGradesInPeriod1(subject) && (
                           <Badge 
                             variant="secondary" 
-                            className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300"
+                            className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300 px-1 py-0.5"
                           >
                             לא מחושב
                           </Badge>
@@ -177,20 +177,20 @@ export function SubjectAveragesList({
                       </div>
                       
                       {/* Period 2 */}
-                      <div className="text-start sm:text-center">
-                        <div className="text-sm text-gray-500 mb-1">מחצית ב׳</div>
-                        <div className={`text-base sm:text-lg font-bold ${getAverageColor(subject.period2.average, subject.period2.isUncalculateable)}`}>
+                      <div className="text-start sm:text-center p-1">
+                        <div className="text-xs text-gray-500 mb-0.5 sm:mb-1">מחצית ב׳</div>
+                        <div className={`text-sm sm:text-lg font-bold ${getAverageColor(subject.period2.average, subject.period2.isUncalculateable)}`}>
                           {hasNoGradesInPeriod2(subject) ? "—" : 
                            subject.period2.isUncalculateable ? "—" : 
                            subject.period2.average.toFixed(1)}
                         </div>
-                        <div className="text-xs text-gray-500 mb-1">
+                        <div className="text-xs text-gray-500 mb-0.5 sm:mb-1">
                           {hasNoGradesInPeriod2(subject) ? "—" : `${subject.period2.totalWeight}%`}
                         </div>
                         {subject.period2.isUncalculateable && !hasNoGradesInPeriod2(subject) && (
                           <Badge 
                             variant="secondary" 
-                            className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300"
+                            className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300 px-1 py-0.5"
                           >
                             לא מחושב
                           </Badge>
@@ -198,18 +198,18 @@ export function SubjectAveragesList({
                       </div>
                       
                       {/* Overall Average */}
-                      <div className="text-start sm:text-center">
-                        <div className="text-sm text-gray-500 mb-1">כללי</div>
-                        <div className={`text-xl sm:text-2xl font-bold ${getAverageColor(subject.overall.average, subject.overall.isUncalculateable)}`}>
+                      <div className="text-start sm:text-center p-1">
+                        <div className="text-xs text-gray-500 mb-0.5 sm:mb-1">כללי</div>
+                        <div className={`text-lg sm:text-2xl font-bold ${getAverageColor(subject.overall.average, subject.overall.isUncalculateable)}`}>
                           {subject.overall.isUncalculateable ? "—" : subject.overall.average.toFixed(1)}
                         </div>
-                        <div className="text-xs text-gray-500 mb-1 mt-0.5 sm:mt-0">
+                        <div className="text-xs text-gray-500 mb-0.5 sm:mb-1 mt-0 sm:mt-0"> {/* Adjusted mt */}
                           {subject.overall.totalWeight}/200
                         </div>
                         {subject.overall.isUncalculateable && (
                           <Badge 
                             variant="secondary" 
-                            className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300"
+                            className="text-xs bg-yellow-100 text-yellow-800 border-yellow-300 px-1 py-0.5"
                           >
                             לא מחושב
                           </Badge>

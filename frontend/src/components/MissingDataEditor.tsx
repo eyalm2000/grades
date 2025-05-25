@@ -352,19 +352,17 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
     // Save the custom grades to local storage
     saveCustomGrades();
     
-    // Show success animation
-    setSaveSuccess(true);
-    
-    // Hide success animation after a delay
-    setTimeout(() => {
-      setSaveSuccess(false);
-    }, 2000);
-    
     toast({
-      title: "השינויים נשמרו בהצלחה!",
-      description: "מידע החסר נשמר ויתעדכן בחישוב הממוצעים",
-      duration: 5000,
+      title: "השינויים נשמרו!",
+      description: "המידע החסר עודכן בהצלחה.",
+      variant: "success", 
+      duration: 3000,
     });
+
+    // Call onBack after a short delay to allow toast to be seen
+    setTimeout(() => {
+      onBack(); 
+    }, 1000); 
   };
 
   if (isLoading) {
@@ -408,30 +406,16 @@ export function MissingDataEditor({ onBack }: MissingDataEditorProps) {
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">עריכת מידע חסר</h1>
             </div>
             
-            <AnimatePresence>
-              {saveSuccess ? (
-                <motion.div
-                  variants={successVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="flex items-center space-x-1 sm:space-x-2 space-x-reverse bg-green-100 text-green-800 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg text-xs sm:text-sm"
-                >
-                  <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
-                  <span>נשמר בהצלחה!</span>
-                </motion.div>
-              ) : (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button 
-                    onClick={saveChanges} 
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 h-auto sm:h-9"
-                  >
-                    <Save className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
-                    שמור שינויים
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* The AnimatePresence and saveSuccess logic for the in-header message is removed as per new flow */}
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button 
+                onClick={saveChanges} 
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg text-xs sm:text-sm px-2 py-1 sm:px-3 sm:py-2 h-auto sm:h-9"
+              >
+                <Save className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
+                שמור שינויים
+              </Button>
+            </motion.div>
           </div>
         </div>
       </motion.div>

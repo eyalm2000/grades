@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Sparkles, LineChart, Calculator, Award, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from "framer-motion"; // Added AnimatePresence and motion
 
 interface LandingPageProps {
   onGetStarted: () => void;

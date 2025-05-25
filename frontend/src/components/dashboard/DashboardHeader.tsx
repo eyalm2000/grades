@@ -32,9 +32,9 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
             <Button
               variant="ghost"
               onClick={onProfile}
-              className="flex items-center sm:space-x-2 space-x-reverse group bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200 hover:border-purple-300 rounded-xl p-1.5 sm:px-3 sm:py-2 h-auto transition-all duration-200"
+              className="flex items-center min-[421px]:space-x-2 space-x-reverse group bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 border border-purple-200 hover:border-purple-300 rounded-xl p-1.5 min-[421px]:px-2 min-[421px]:py-1.5 sm:px-3 sm:py-2 h-auto transition-all duration-200"
             >
-              <Avatar className="w-8 h-8 sm:w-10 sm:h-10 ring-2 ring-purple-200 group-hover:ring-purple-400 transition-all duration-200">
+              <Avatar className="w-8 h-8 min-[421px]:w-9 min-[421px]:h-9 sm:w-10 sm:h-10 ring-2 ring-purple-200 group-hover:ring-purple-400 transition-all duration-200">
                 <AvatarImage 
                   src={userImage || ''} 
                   className="object-cover object-center w-full h-full"
@@ -43,7 +43,7 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
                   {user?.firstName.charAt(0) || '?'}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden sm:flex sm:flex-col sm:items-start">
+              <div className="flex max-[420px]:hidden flex-col items-start">
                 <div className="flex flex-col items-start">
                   <motion.span 
                     whileHover={{ x: -2 }} 
@@ -57,7 +57,7 @@ export function DashboardHeader({ user, userImage, onProfile }: DashboardHeaderP
                   </span>
                 </div>
               </div>
-              <ChevronDown className="hidden sm:block w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors" />
+              <ChevronDown className="block max-[420px]:hidden w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors" />
             </Button>
           </motion.div>
         </div>
